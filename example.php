@@ -1,11 +1,4 @@
 <?php
-/* 
-Plugin Name: Product Database
-Description: Versatile product database
-Version: 1.0.0
-Author: James Bruce
-Author URI: http://make-money-blogging-ideas.com/
- */
  
 if (!class_exists("Products")) {
     class Products {
