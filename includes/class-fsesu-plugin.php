@@ -79,7 +79,21 @@ class FSESU_Plugin {
 		add_action( '@TODO', array( $this, 'action_method_name' ) );
 		add_filter( '@TODO', array( $this, 'filter_method_name' ) );
 		
+		$this->set_features();
 		$this->set_categories( $this->categories );
+	}
+	
+	/**
+	 * 
+	 */
+	private function set_features() {
+		// Add in custom role definitions
+		require_once FSESU_PLUGIN_DIR . 'includes/class-fsesu-roles.php';
+		//add_action( 'plugins_loaded', array( 'FSESU_Roles', 'init' ) );
+		FSESU_Roles::init();
+		
+		// Add in custom post type support
+		//require_once FSESU_PLUGIN_DIR . 'includes/class-fsesu-custom-post-type.php';
 	}
 	
 	/**

@@ -11,7 +11,7 @@
  * @since           0.1.0
  * @version         0.1.0
  * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
- * @lastmodified    19 August 2014
+ * @lastmodified    20 August 2014
  */
  
 class FSESU_Roles {
@@ -57,7 +57,26 @@ class FSESU_Roles {
 	 * 
 	 */
 	public function admin_menu() {
-	    
+		// Add new menu items for News and Camp Diaries
+		add_users_page( 'Leaders', 'Leaders', 'list_users', 'users.php?role=leader' );
+		add_users_page( 'Explorers', 'Explorers', 'list_users', 'users.php?role=explorer' );
+		add_users_page( 'Parents', 'Parents', 'list_users', 'users.php?role=parents' );
+		add_users_page( 'Past Members', 'Past Members', 'list_users', 'users.php?role=ex-member' );
+		
+		// Reorder some of the menu items
+		global $submenu;
+		$submenu['users.php'][6] = $submenu['users.php'][16];
+		$submenu['users.php'][7] = $submenu['users.php'][17];
+		$submenu['users.php'][8] = $submenu['users.php'][18];
+		$submenu['users.php'][9] = $submenu['users.php'][19];
+		$submenu['users.php'][20] = $submenu['users.php'][15];
+		$submenu['users.php'][15] = $submenu['users.php'][10];
+		unset( $submenu['users.php'][10] );
+		unset( $submenu['users.php'][16] );
+		unset( $submenu['users.php'][17] );
+		unset( $submenu['users.php'][18] );
+		unset( $submenu['users.php'][19] );
+		ksort( $submenu['users.php'] );
 	}
     
     /**
@@ -65,37 +84,31 @@ class FSESU_Roles {
      */
     private function define_roles() {
         // Define arrays of additional capabilities for the roles to be added
-        $assistant_leader = array(
+        $leader = array(
+                'activate_plugins',
                 'create_users',
+                'edit_files',
+                'edit_theme_options',
+                'edit_themes',
                 'edit_users',
+                'export',
+                'import',
+                'install_plugins',
                 'list_users',
                 'promote_users',
-            );
-        $leader = array_merge( $assistant_leader, array( 
-                    'activate_plugins',
-                    'edit_files',
-                    'edit_theme_options',
-                    'edit_themes',
-                    'export',
-                    'import',
-                    'install_plugins',
-                    'update_core',
-                    'update_plugins',
-                    'update_themes'
-                )
+                'update_core',
+                'update_plugins',
+                'update_themes'
             );
         
         // Define the new roles
-        $this->add_role( 'leader', 'Unit Leader', 'editor' );
-        $this->add_role( 'assistant-leader', 'Assistant Unit Leader', 'editor' );
-        $this->add_role( 'committee', 'Unit Committee Member', 'author' );
+        $this->add_role( 'leader', 'Leader', 'editor' );
         $this->add_role( 'explorer', 'Explorer', 'contributor' );
         $this->add_role( 'parent', 'Parent', 'subscriber' );
         $this->add_role( 'ex-member', 'Past Member', 'subscriber' );
-        
+       
         // Link the additional capabilties to the new roles
         $this->add_capabilities( 'leader', $leader );
-        $this->add_capabilities( 'assistant-leader', $assistant_leader );
     }
     
     /**
