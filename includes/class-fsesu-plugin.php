@@ -78,6 +78,8 @@ class FSESU_Plugin {
 		 */
 		add_action( '@TODO', array( $this, 'action_method_name' ) );
 		add_filter( '@TODO', array( $this, 'filter_method_name' ) );
+		
+		$this->set_categories( $this->categories );
 	}
 	
 	/**
