@@ -64,7 +64,38 @@ class FSESU_Roles {
      * 
      */
     private function define_roles() {
+        // Define arrays of additional capabilities for the roles to be added
+        $assistant_leader = array(
+                'create_users',
+                'edit_users',
+                'list_users',
+                'promote_users',
+            );
+        $leader = array_merge( $assistant_leader, array( 
+                    'activate_plugins',
+                    'edit_files',
+                    'edit_theme_options',
+                    'edit_themes',
+                    'export',
+                    'import',
+                    'install_plugins',
+                    'update_core',
+                    'update_plugins',
+                    'update_themes'
+                )
+            );
         
+        // Define the new roles
+        $this->add_role( 'leader', 'Unit Leader', 'editor' );
+        $this->add_role( 'assistant-leader', 'Assistant Unit Leader', 'editor' );
+        $this->add_role( 'committee', 'Unit Committee Member', 'author' );
+        $this->add_role( 'explorer', 'Explorer', 'contributor' );
+        $this->add_role( 'parent', 'Parent', 'subscriber' );
+        $this->add_role( 'ex-member', 'Past Member', 'subscriber' );
+        
+        // Link the additional capabilties to the new roles
+        $this->add_capabilities( 'leader', $leader );
+        $this->add_capabilities( 'assistant-leader', $assistant_leader );
     }
     
     /**
