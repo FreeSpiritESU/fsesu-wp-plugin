@@ -31,3 +31,22 @@
 if ( ! defined( 'WPINC' ) ) {
     die;
 }
+
+define( 'FSESU_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+
+/**
+ * Include the core class responsible for loading all necessary components of the plugin.
+ */
+require_once FSESU_PLUGIN_DIR . 'includes/class-fsesu-plugin.php';
+
+
+/*
+ * Register hooks that are fired when the plugin is activated or deactivated.
+ */
+register_activation_hook( __FILE__, array( 'FSESU_Plugin', 'activate' ) );
+register_deactivation_hook( __FILE__, array( 'FSESU_Plugin', 'deactivate' ) );
+
+/*
+ * Initialise the plugin when plugins are loaded
+ */
+add_action( 'plugins_loaded', array( 'FSESU_Plugin', 'init' ) );
