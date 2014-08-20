@@ -24,6 +24,37 @@ class FSESU_Plugin {
 	 * @var      object
 	 */
 	protected static $instance = null;
+	
+	/**
+	 * 
+	 */
+	protected $categories = array(
+		array (
+	        'term' => 'News',
+	        'args' => 
+	            array(
+	                'description' => "News about what is happening in our Unit",
+	                'slug' => 'news'
+	            )
+	    ),
+	    array (
+	        'term' => "What's New",
+	        'args' => 
+	            array(
+	                'description' => "Quick updates about new things on the website, as well as quick notices for the Unit",
+	                'slug' => 'whatsnew',
+	                'parent' => 'News'
+	            )
+	    ),
+	    array (
+	        'term' => 'Camp Diaries',
+	        'args' => 
+	            array(
+	                'description' => "Everytime we participate in a major camp, or jamboree, as a group, we will be keeping everyone informed of how we are getting on through our camp diary. These diaries will be posted here, and pictures will generally be found on our Gallery.",
+	                'slug' => 'campdiaries'
+	            )
+	    )
+	);
 
 	/**
 	 * Initialize the plugin by setting localization and loading public scripts
@@ -53,8 +84,47 @@ class FSESU_Plugin {
 	 * 
 	 */
 	public function admin_menu() {
+		// Add new menu items for News and Camp Diaries
+		add_posts_page( 'News Items', 'News Items', 'edit_posts', 'edit.php?category_name=news' );
+		add_posts_page( 'Camp Diaries', 'Camp Diaries', 'edit_posts', 'edit.php?category_name=campdiaries' );
 		
+		// Reorder some of the menu items
+		global $submenu;
+		$submenu['edit.php'][6] = $submenu['edit.php'][17];
+		$submenu['edit.php'][7] = $submenu['edit.php'][18];
+		unset( $submenu['edit.php'][17] );
+		unset( $submenu['edit.php'][18] );
+		ksort( $submenu['edit.php'] );
 	}
+	
+	/**
+     * Add the standard categories that will be used by the site.
+     * 
+     * This function uses the wp_insert_term function to add new categories to 
+     * the standard category taxonomy (n.b. it cannot be used to add new terms to 
+     * custom taxonomies)
+     * 
+     * 
+     * @param       array   $categories array containing category details.
+     * @return      void
+     * 
+     * @since       3.0.0
+     */
+    private function set_categories( $categories ) {
+        /*
+         * Breakdown the categories array into individual category arrays
+         * then check there is not already a category by that name and 
+         * insert the new category if required
+         */
+        foreach ( $categories as $category ) {
+            if ( !get_cat_ID( $category['term'] ) ) {
+            	if ( $category['args']['parent'] ) {
+            		$category['args']['parent'] = get_cat_ID( $category['args']['parent'] );
+            	}
+                wp_insert_term( $category['term'], 'category', $category['args'] ); 
+            }
+        }
+    }
 
 	/**
 	 * Return an instance of this class.
