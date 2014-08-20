@@ -116,11 +116,13 @@ class FSESU_Roles {
         if ( get_role( $role ) ) {
             $role = get_role( $role );
             
-            if (  is_array( $capabilities ) ) {
+            if ( ! is_array( $capabilities ) ) {
                 $role->add_cap( $capabilities );
             } else {
                 foreach ( $capabilities as $capability ) {
-                    $role->add_cap( $capability );
+                    if ( ! $role->has_cap( $capability ) ) {
+                        $role->add_cap( $capability );
+                    }
                 }
             }
         }
