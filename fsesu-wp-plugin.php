@@ -173,7 +173,9 @@ class Plugin {
         require_once( FSESU_DIR . 'inc/functions.php' ); */
         require_once( FSESU_INC . 'class-fsesu-roles.php' );
         require_once( FSESU_INC . 'class-fsesu-custom-post-type.php' );
-        //require_once( FSESU_CPT . 'class-fsesu-programme.php' );
+        require_once( FSESU_CPT . 'class-fsesu-programme.php' );
+        require_once( FSESU_CPT . 'class-fsesu-products.php' );;
+        require_once( FSESU_CPT . 'class-fsesu-supporters.php' );
     }
     
     /**
@@ -188,7 +190,9 @@ class Plugin {
         Roles::init();
         
         /* Add the Programme/Event Custom Post Type */
-        //Programme::init();
+        Programme::init();
+        Products::init();
+        Supporters::init();
     }
     
     /**
