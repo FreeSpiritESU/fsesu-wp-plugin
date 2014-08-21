@@ -1,6 +1,7 @@
 <?php
 /**
- * FSESU_Plugin is the core class that instantiates all functionality of the plugin
+ * Custom Post Type is an abstract base class that needs to be extended to create
+ * new custom post types
  *  
  * @package         Wordpress\Plugins\FreeSpiritESU
  * @subpackage      Classes
@@ -14,6 +15,25 @@
  */
 
 namespace FSESU;
+
+abstract class Custom_Post_Type {
+
+    private static $instance = array();
+
+    public static function init() {
+        $c = get_called_class();
+        if ( !isset( self::$instance[$c] ) ) {
+            self::$instance[$c] = new $c();
+            self::$instance[$c]->init();
+        }
+
+        return self::$instance[$c];
+    }
+
+    protected function __construct() {
+    	
+    }
+}
 
 class Custom_Post_Type {
 	public $post_type_name;
