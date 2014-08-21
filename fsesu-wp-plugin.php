@@ -1,32 +1,39 @@
 <?php
 /* 
- Plugin Name:       FreeSpirit ESU Plugin
- Description:       Custom Plugin designed for use by FreeSpirit ESU only
- Version:           0.1.0
- Author:            Richard Perry
- Author URI:        http://richard.perry-online.me.uk/
- License:           GPL2+
- License URI:       http://www.gnu.org/licenses/gpl-2.0.html
- Text Domain:       fsesu
- GitHub Theme URI:  richardp2/fsesu-theme
- GitHub Branch:     develop
-
-
-    Copyright 2014  FreeSpirit ESU  (email : richard@freespiritesu.org.uk)
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License, version 2, as 
-    published by the Free Software Foundation.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
+ * Plugin Name:       FreeSpirit ESU Plugin
+ * Description:       Custom Plugin designed for use by FreeSpirit ESU only
+ * Version:           0.1.0
+ * Author:            Richard Perry
+ * Author URI:        http://richard.perry-online.me.uk/
+ * License:           GPL2+
+ * License URI:       http://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       fsesu
+ * GitHub Theme URI:  richardp2/fsesu-theme
+ * GitHub Branch:     develop
+ * 
+ * 
+ *    Copyright 2014  FreeSpirit ESU  (email : richard@freespiritesu.org.uk)
+ * 
+ *    This program is free software; you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License, version 2, as 
+ *    published by the Free Software Foundation.
+ * 
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ * 
+ *     You should have received a copy of the GNU General Public License
+ *    along with this program; if not, write to the Free Software
+ *    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * @package         Wordpress\Plugins\FreeSpiritESU
+ * @subpackage      Classes
+ * @copyright       Copyright (c) 2014 FreeSpirit ESU
+ * @since           0.1.0
+ * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
+ * @lastmodified    21 August 2014
+ */
 
 namespace FSESU;
 
@@ -39,11 +46,20 @@ class Plugin {
     /**
      * Instance of this class.
      *
-     * @since    0.1.0
-     *
-     * @var      object
+     * @since   0.1.0
+     * @access  protected
+     * @var     object
      */
     protected static $instance = null;
+    
+    /**
+     * Text domain of the plugin
+     * 
+     * @since   0.1.0
+     * @access  public
+     * @var     string
+     */
+    protected $domain;
     
     /**
      * 
@@ -109,6 +125,8 @@ class Plugin {
         /* Register deactivation hook */
         register_deactivation_hook( __FILE__, array( $this, 'deactivation' ) );
         
+        $this->domain = 'fsesu';
+        
         $this->set_categories( $this->categories );
     }
 	
@@ -129,6 +147,9 @@ class Plugin {
         
         /* Set the constant path to the includes directory. */
 	    define( 'FSESU_INC', FSESU_DIR . trailingslashit( 'includes' ) );
+	    
+	    /* Set the constant path to the custom post type directory. */
+	    define( 'FSESU_CPT', FSESU_INC . trailingslashit( 'custom_post_types' ) );
 	    
         /* Set the constant path to the admin directory. */
 	    define( 'FSESU_ADM', FSESU_DIR . trailingslashit( 'admin' ) );
@@ -151,6 +172,8 @@ class Plugin {
         require_once( FSESU_DIR . 'inc/class-fsesu-and-accordions.php' );
         require_once( FSESU_DIR . 'inc/functions.php' ); */
         require_once( FSESU_INC . 'class-fsesu-roles.php' );
+        require_once( FSESU_INC . 'class-fsesu-custom-post-type.php' );
+        //require_once( FSESU_CPT . 'class-fsesu-programme.php' );
     }
     
     /**
@@ -161,8 +184,11 @@ class Plugin {
      * @return void
      */
     public function features() {
-        // Add in custom role definitions
+        /* Add in custom role definitions */
         Roles::init();
+        
+        /* Add the Programme/Event Custom Post Type */
+        //Programme::init();
     }
     
     /**
@@ -226,6 +252,13 @@ class Plugin {
     }
     
     /**
+     * 
+     */
+    public function get_domain() {
+        return $this->domain;
+    }
+    
+    /**
      * Add the standard categories that will be used by the site.
      * 
      * This function uses the wp_insert_term function to add new categories to 
@@ -276,7 +309,7 @@ class Plugin {
      * @since    0.1.0
      */
     public static function activate() {
-        
+        flush_rewrite_rules();
     }
 
     /**
@@ -317,4 +350,4 @@ class Plugin {
 
 }
 
-Plugin::init();
+$fsesu = Plugin::init();

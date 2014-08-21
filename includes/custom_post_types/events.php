@@ -57,7 +57,7 @@ function create_event_postype() {
       'can_export' => true,
       'show_ui' => true,
       'capability_type' => 'post',
-      'menu_icon' => get_stylesheet_directory_uri() . '/images/events_grey.png',
+      'menu_icon' => 'dashicons-calendar',
       'hierarchical' => false,
       'rewrite' => array( 'slug' => "unitinfo/programme" ),
       'supports'=> array('title', 'thumbnail', 'excerpt', 'editor') ,
@@ -243,7 +243,7 @@ function fs_events_meta () {
    $meta_st    = $meta_sd;
    $meta_et    = $meta_ed;
    $meta_loc   = $custom["fs_events_loc"][0];
-   $meta_price = str_replace("&pound;", "£", $custom["fs_events_price"][0]);
+   $meta_price = str_replace("&pound;", "ï¿½", $custom["fs_events_price"][0]);
    $meta_link  = $custom["fs_events_link"][0];
 
    // Get the default time and date formats
@@ -350,7 +350,7 @@ function save_fs_events(){
     if(!isset($_POST["fs_events_link"])):
         return $post;
         endif;
-        $link = str_replace("£", "&pound;", $_POST["fs_events_link"]);
+        $link = str_replace("ï¿½", "&pound;", $_POST["fs_events_link"]);
         update_post_meta($post->ID, "fs_events_link", $link );
 
 }
