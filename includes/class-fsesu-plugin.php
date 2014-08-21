@@ -10,11 +10,12 @@
  * @since           0.1.0
  * @version         0.1.0
  * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
- * @lastmodified    20 August 2014
+ * @lastmodified    21 August 2014
  */
 
+namespace FSESU;
 
-class FSESU_Plugin {
+class Plugin {
 
 	/**
 	 * Instance of this class.
@@ -94,7 +95,7 @@ class FSESU_Plugin {
 		// Add in custom role definitions
 		require_once FSESU_PLUGIN_DIR . 'includes/class-fsesu-roles.php';
 		//add_action( 'plugins_loaded', array( 'FSESU_Roles', 'init' ) );
-		FSESU_Roles::init();
+		Roles::init();
 		
 		// Add in custom post type support
 		//require_once FSESU_PLUGIN_DIR . 'includes/class-fsesu-custom-post-type.php';

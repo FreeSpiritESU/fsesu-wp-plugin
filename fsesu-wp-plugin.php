@@ -27,7 +27,7 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
- 
+
 if ( ! defined( 'WPINC' ) ) {
     die;
 }
@@ -39,14 +39,14 @@ define( 'FSESU_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
  */
 require_once FSESU_PLUGIN_DIR . 'includes/class-fsesu-plugin.php';
 
-
 /*
  * Register hooks that are fired when the plugin is activated or deactivated.
  */
-register_activation_hook( __FILE__, array( 'FSESU_Plugin', 'activate' ) );
-register_deactivation_hook( __FILE__, array( 'FSESU_Plugin', 'deactivate' ) );
+register_activation_hook( __FILE__, array( 'FSESU\Plugin', 'activate' ) );
+register_deactivation_hook( __FILE__, array( 'FSESU\Plugin', 'deactivate' ) );
 
 /*
  * Initialise the plugin when plugins are loaded
  */
-add_action( 'plugins_loaded', array( 'FSESU_Plugin', 'init' ) );
+add_action( 'plugins_loaded', array( 'FSESU\Plugin', 'init' ) );
+

@@ -11,10 +11,12 @@
  * @since           0.1.0
  * @version         0.1.0
  * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
- * @lastmodified    20 August 2014
+ * @lastmodified    21 August 2014
  */
- 
-class FSESU_Roles {
+
+namespace FSESU;
+
+class Roles {
     
     /**
      * Instance of this class.

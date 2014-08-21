@@ -1,5 +1,21 @@
-class FSESU_Custom_Post_Type 
-{
+<?php
+/**
+ * FSESU_Plugin is the core class that instantiates all functionality of the plugin
+ *  
+ * @package         Wordpress\Plugins\FreeSpiritESU
+ * @subpackage      Classes
+ * @author          Richard Perry <http://www.perry-online.me.uk/>
+ * @copyright       Copyright (c) 2014 FreeSpirit ESU
+ * @license         http://www.gnu.org/licenses/gpl-2.0.html
+ * @since           0.1.0
+ * @version         0.1.0
+ * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
+ * @lastmodified    21 August 2014
+ */
+
+namespace FSESU;
+
+class Custom_Post_Type {
 	public $post_type_name;
 	public $post_type_args;
 	public $post_type_labels;
