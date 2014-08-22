@@ -11,7 +11,7 @@
  * @since           0.1.0
  * @version         0.1.0
  * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
- * @lastmodified    21 August 2014
+ * @lastmodified    22 August 2014
  */
 
 namespace FSESU;
@@ -24,6 +24,7 @@ class Programme extends Custom_Post_Type {
         
         $this->post_type = 'event';
         $this->post_type_plural = 'Events';
+        $this->taxonomy = 'programme_type';
         
         $this->set_defaults();
         
@@ -37,7 +38,10 @@ class Programme extends Custom_Post_Type {
         /* Modify some of the default post type arguments */
         $this->arguments['menu_icon'] = 'dashicons-calendar';
         $this->arguments['rewrite'] = array( 'slug' => "unitinfo/programme", 'with_front' => false );
-        //$this->arguments['taxonomies'] = array( '', '' );
+        $this->arguments['taxonomies'] = array( 'post_tag' );
+        
+        /* Modify some of the default taxonomy arguments */
+        $this->tax_arguments['rewrite'] = array( 'slug' => "unitinfo/programme/category", 'with_front' => false );
         
         parent::__construct();
     }

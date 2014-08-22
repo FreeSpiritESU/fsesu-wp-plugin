@@ -11,7 +11,7 @@
  * @since           0.1.0
  * @version         0.1.0
  * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
- * @lastmodified    21 August 2014
+ * @lastmodified    22 August 2014
  */
 
 namespace FSESU;
@@ -55,18 +55,50 @@ abstract class Custom_Post_Type {
     protected $arguments = array();
     
     /**
-     * Defaults for the post type labels
+     * Defines the array for the post type labels
      * 
      * @since 	0.1.0
      * @access	protected
      * @var		array
      */
     protected $labels = array();
+    
+    /**
+     * Custom taxonomy designation
+     * 
+     * @since 	0.1.0
+     * @access	protected
+     * @var		array
+     */
+    protected $taxonomy;
+    
+    /**
+     * Defines the array for the taxonomy arguments
+     * 
+     * @since 	0.1.0
+     * @access	protected
+     * @var		array
+     */
+    protected $tax_arguments = array();
+    
+    /**
+     * Defines the array for the taxonomy labels
+     * 
+     * @since 	0.1.0
+     * @access	protected
+     * @var		array
+     */
+    protected $tax_labels = array();
 
     protected function __construct() {
-        // Add action to register the post type, if the post type does not already exist
+        /* Add action to register the post type, if the post type does not already exist */
         if( ! post_type_exists( $this->post_type ) ) {
             add_action( 'init', array( $this, 'register_post_type' ) );
+        }
+        
+        /* If a custom taxonomy has been defined, register it */
+        if( $this->taxonomy ) {
+            add_action( 'init', array( $this, 'register_taxonomy' ), 0 );
         }
     }
     
@@ -110,15 +142,42 @@ abstract class Custom_Post_Type {
             'show_in_nav_menus'	    => true,
             'show_in_menu'		    => true,
             'show_in_admin_bar'	    => true,
-            'menu_position'		    => 5,
             'menu_icon' 			=> '',
             'capability_type' 	    => 'post',
             'hierarchical' 		    => false,
             'supports'			    => array( 'title', 'editor', 'author', 'comments', 'revisions' ),
+            'register_meta_box_cb'  => '',
             'has_archive'			=> true,
             'rewrite' 			    => array( 'slug' => $name, 'with_front' => false ),
             'can_export' 			=> true
         );
+        
+        /* Check if a custom taxonomy has been defined */
+        if ( $this->taxonomy ) {
+            
+            /* Set up the default labels for a custom taxonomy */
+            $this->tax_labels = array(
+                'name'              => _x( $name . ' Types', 'taxonomy general name' ),
+                'singular_name'     => _x( $name . ' Type', 'taxonomy singular name' ),
+                'search_items'      => __( 'Search ' . $name . ' Types' ),
+                'all_items'         => __( 'All ' . $name . ' Types' ),
+                'edit_item'         => __( 'Edit ' . $name . ' Type' ), 
+                'update_item'       => __( 'Update ' . $name . ' Type' ),
+                'add_new_item'      => __( 'Add New ' . $name . ' Type' ),
+                'new_item_name'     => __( 'New ' . $name . ' Type' ),
+                'menu_name'         => __(  $name . ' Types' ),
+            );
+            
+            $this->tax_arguments = array(
+                'labels'            => $this->tax_labels,
+                'public'            => true,
+                'show_ui'           => true,
+                'meta_box_cb'       => null,
+                'show_admin_column' => false,
+                'hierarchical'      => false,
+                'rewrite'           => array( 'slug' => $this->taxonomy, 'with_front' => false, 'hierarchical' => true )
+            );
+        }
     }
     
     /**
@@ -131,6 +190,18 @@ abstract class Custom_Post_Type {
     public function register_post_type() {
         /* Register the post type */
         register_post_type( $this->post_type, $this->arguments );
+    }
+    
+    /**
+     * Method to register a custom taxonomy for the post type 
+     * 
+     * @since 	0.1.0
+     * @access 	public
+     * @return	void
+     */
+    public function register_taxonomy() {
+        /* Register the post type */
+        register_taxonomy( $this->taxonomy, $this->post_type, $this->tax_arguments );
     }
     
     /**

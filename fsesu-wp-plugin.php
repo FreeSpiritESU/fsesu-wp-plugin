@@ -174,8 +174,9 @@ class Plugin {
         require_once( FSESU_INC . 'class-fsesu-roles.php' );
         require_once( FSESU_INC . 'class-fsesu-custom-post-type.php' );
         require_once( FSESU_CPT . 'class-fsesu-programme.php' );
-        require_once( FSESU_CPT . 'class-fsesu-products.php' );;
+        require_once( FSESU_CPT . 'class-fsesu-products.php' );
         require_once( FSESU_CPT . 'class-fsesu-supporters.php' );
+        require_once( FSESU_CPT . 'class-fsesu-downloads.php' );
     }
     
     /**
@@ -193,6 +194,7 @@ class Plugin {
         Programme::init();
         Products::init();
         Supporters::init();
+        Downloads::init();
     }
     
     /**
@@ -242,7 +244,11 @@ class Plugin {
             'separator1', // First separator
             'edit.php?post_type=page', // Pages
             'edit.php', // Posts
+            'edit.php?post_type=event', // Programme
+            'edit.php?post_type=product', // Products
+            'edit.php?post_type=supporter', // Unit Supporters
             'upload.php', // Media
+            'edit.php?post_type=file', // Downloads
             'users.php', // Users
             'link-manager.php', // Links
             'edit-comments.php', // Comments
