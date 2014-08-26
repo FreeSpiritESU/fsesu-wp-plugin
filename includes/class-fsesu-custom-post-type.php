@@ -11,7 +11,7 @@
  * @since           0.1.0
  * @version         0.1.0
  * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
- * @lastmodified    22 August 2014
+ * @lastmodified    26 August 2014
  */
 
 namespace FSESU;
@@ -89,7 +89,45 @@ abstract class Custom_Post_Type {
      * @var		array
      */
     protected $tax_labels = array();
-
+    
+    /**
+     * Defines the array for any custom fields required
+     * 
+     * @since   0.1.0
+     * @access  protected
+     * @var     array
+     */
+    protected $fields = array();
+    
+    /**
+     * Defines the context for any custom meta box
+     * 
+     * @since   0.1.0
+     * @access  protected
+     * @var     string
+     */
+    protected $meta_context = 'normal';
+    
+    /**
+     * Defines the priority for any custom meta box
+     * 
+     * @since   0.1.0
+     * @access  protected
+     * @var     string
+     */
+    protected $meta_priority = 'high';
+    
+    /**
+     * The construct method which run on instantiation
+     * 
+     * This method runs once the class has been initialised. It needs to be called
+     * by all child classes as there are a number of action hooks included here
+     * that all custom post types need to register
+     * 
+     * @since   0.1.0
+     * @access  protected
+     * @return  void
+     */
     protected function __construct() {
         /* Add action to register the post type, if the post type does not already exist */
         if( ! post_type_exists( $this->post_type ) ) {
@@ -219,6 +257,104 @@ abstract class Custom_Post_Type {
         }
 
         return self::$instance[$c];
+    }
+    
+    /**
+     * 
+     *
+     * @since    0.1.0
+     * @access   public
+     * @return   void    
+     */
+    public function add_meta_box( $post_type ) {
+        global $fsesu;
+        
+        add_meta_box( 
+            $this->post_type . '_meta', 
+            __( ucwords( $this->post_type ) . ' Details', $fsesu->get_domain() ), 
+            array( $this, 'render_meta_box' ),
+            $this->post_type, 
+            $this->meta_context, 
+            $this->meta_priority 
+        );
+    }
+    
+    /**
+     * 
+     *
+     * @since    0.1.0
+     * @access   public
+     * @return   void    
+     */
+    public function render_meta_box( $post ) {
+        /* Add an nonce field so we can check for it later */
+        wp_nonce_field( $this->post_type . '_meta', $this->post_type . '_meta_nonce' );
+        
+        $meta = get_post_meta( $post->ID );
+        
+        foreach( $this->fields as $field ) {
+            extract ( $field );
+            
+            $default = isset( $default ) ? $default : '';
+            $value = isset( $meta[$id][0] ) ? $meta[$id][0] : $default;
+            
+            echo '<div class="' . $this->post_type . '_meta_' . $id . ' custom_meta_data ' . $class . '">';
+            echo '<label for="' . $id . '">' . $label . '</label>';
+            
+            switch ( $type ) {
+                case 'textarea':
+                    echo '<textarea id="' . $id . '" name="' . $id . '">' . $value . '</textarea>';
+                    break;
+                default:
+                    $value = ( $value ) ? ' value="' . $value . '"' : '';
+                    echo '<input type="' . $type . '" id="' . $id . '" name="' . $id . '"' . $value . '>';
+            }
+            
+            echo '</div>';
+        }
+    }
+    
+    /**
+     * 
+     *
+     * @since    0.1.0
+     * @access   public
+     */
+    public function save_post_type( $post_id ) {
+        
+        /* Check if the nonce is set. */
+        if ( ! isset( $_POST[$this->post_type . '_meta_nonce'] ) ) {
+            return;
+        }
+    
+        /* Verify that the nonce is valid. */
+        if ( ! wp_verify_nonce( $_POST[$this->post_type . '_meta_nonce'], $this->post_type . '_meta' ) ) {
+            return;
+        }
+    
+        /** If this is an autosave, our form has not been submitted, so we don't want to do anything. */
+        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+            return;
+        }
+    
+        /* Check the user's permissions. */
+        if ( ! current_user_can( 'edit_post', $post_id ) ) {
+            return;
+        }
+        
+        foreach ( $this->fields as $field ) {
+            extract ( $field );
+            
+            if ( ! isset( $_POST[ $id ] ) ) return $post_id;
+            
+            switch ( $type ) {
+                case 'text':
+                    update_post_meta( $post_id, $id, sanitize_text_field( $_POST[ $id ] ) );
+                    break;
+                default:
+                    update_post_meta( $post_id, $id, $_POST[ $id ] );
+            }
+        }
     }
 }
 

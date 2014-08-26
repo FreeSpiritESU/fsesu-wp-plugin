@@ -10,7 +10,7 @@
  * @since           0.1.0
  * @version         0.1.0
  * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
- * @lastmodified    22 August 2014
+ * @lastmodified    26 August 2014
  */
 
 namespace FSESU;
@@ -23,7 +23,7 @@ class Downloads extends Custom_Post_Type {
         
         $this->post_type = 'file';
         $this->post_type_plural = 'Files';
-        $this->taxonomy = 'download_cetegory';
+        $this->taxonomy = 'download_category';
         
         $this->set_defaults();
         
