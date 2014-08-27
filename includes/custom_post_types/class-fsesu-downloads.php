@@ -1,6 +1,11 @@
 <?php
 /**
- * This class defines the File Post Type
+ * This file contains the class that defines the File Custom Post Type
+ * 
+ * One of the key aspects of the FreeSpirit Website is that Unit Members can easily
+ * access and download various different files (i.e. forms, directions, permits etc)
+ * so that the Unit does not have to waste paper printing multiple copies of
+ * everything that won't be used.
  *  
  * @package         Wordpress\Plugins\FreeSpiritESU
  * @subpackage      Classes
@@ -10,15 +15,38 @@
  * @since           0.1.0
  * @version         0.1.0
  * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
- * @lastmodified    26 August 2014
+ * @lastmodified    27 August 2014
  */
 
 namespace FSESU;
 
-class Downloads extends Custom_Post_Type {
+/**
+ * Custom Post Type class for handling files.
+ * 
+ * This class extends the abstract class, Custom_Post_Type, and defines the various
+ * elements that are specific to the File Custom Post Type.
+ * 
+ * @since   0.1.0
+ * 
+ * @see     Custom_Post_Type
+ */
+class Downloads extends Custom_Post_Type
+{
     
-    protected function __construct() {
-        
+    /**
+     * Class constructor method.
+     * 
+     * The class constructor method is fired when the class is instantiated (or
+     * cosntructed ;-)). As this class extends the Abstract Class Custom_Post_Type
+     * it defines the specific post type, sets the defaults and adds in specific
+     * elements unique to the File post type.
+     * 
+     * @since   0.1.0
+     * @global  object  $fsesu  Instance of the main plugin class.
+     * @return  void.
+     */
+    protected function __construct()
+    {
         global $fsesu;
         
         $this->post_type = 'file';

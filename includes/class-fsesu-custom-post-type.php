@@ -1,7 +1,13 @@
 <?php
 /**
+ * This file contains the an abstract class that contains the functionality to 
+ * create custom post types
+ * 
  * Custom Post Type is an abstract base class that needs to be extended to create
- * new custom post types
+ * new custom post types. The class contains all the necessary properties and
+ * methods to define new custom post types, with custom taxonomies, custom fields,
+ * meta boxes and columns. It is up to each child class to define how these are
+ * all put together.
  *  
  * @package         Wordpress\Plugins\FreeSpiritESU
  * @subpackage      Classes
@@ -11,121 +17,119 @@
  * @since           0.1.0
  * @version         0.1.0
  * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
- * @lastmodified    26 August 2014
+ * @lastmodified    27 August 2014
  */
 
 namespace FSESU;
 
-abstract class Custom_Post_Type {
-    
+/**
+ * Custom Post Type abstract class for defining new Custom Post Types.
+ * 
+ * This abstract class defines the main properties and functions required by the
+ * child classes to register custom post types that include custom taxonomies,
+ * custom fields, meta boxes and custom columns. The default values are also 
+ * defined within this class.
+ * 
+ * @since   0.1.0
+ */
+abstract class Custom_Post_Type 
+{
     /**
      * Instance of this class and subclasses.
      *
      * @since   0.1.0
-     * @access  private
      * @var     object
      */
     private static $instance = array();
     
     /**
-     * The post type designation
+     * The post type designation.
      * 
      * @since 	0.1.0
-     * @access	protected
      * @var		string
      */
     protected $post_type = '';
     
     /**
-     * The post type plural designation
+     * The post type plural designation.
      * 
      * @since 	0.1.0
-     * @access	protected
      * @var		string
      */
     protected $post_type_plural = '';
     
     /**
-     * Defines the array for the post type arguments
+     * Defines the array for the post type arguments.
      * 
      * @since 	0.1.0
-     * @access	protected
      * @var		array
      */
     protected $arguments = array();
     
     /**
-     * Defines the array for the post type labels
+     * Defines the array for the post type labels.
      * 
      * @since 	0.1.0
-     * @access	protected
      * @var		array
      */
     protected $labels = array();
     
     /**
-     * Custom taxonomy designation
+     * Custom taxonomy designation.
      * 
      * @since 	0.1.0
-     * @access	protected
      * @var		array
      */
     protected $taxonomy;
     
     /**
-     * Defines the array for the taxonomy arguments
+     * Defines the array for the taxonomy arguments.
      * 
      * @since 	0.1.0
-     * @access	protected
      * @var		array
      */
     protected $tax_arguments = array();
     
     /**
-     * Defines the array for the taxonomy labels
+     * Defines the array for the taxonomy labels.
      * 
      * @since 	0.1.0
-     * @access	protected
      * @var		array
      */
     protected $tax_labels = array();
     
     /**
-     * Defines the array for any custom fields required
+     * Defines the array for any custom fields required.
      * 
      * @since   0.1.0
-     * @access  protected
      * @var     array
      */
     protected $fields = array();
     
     /**
-     * Defines the context for any custom meta box
+     * Defines the context for any custom meta box.
      * 
      * @since   0.1.0
-     * @access  protected
      * @var     string
      */
     protected $meta_context = 'normal';
     
     /**
-     * Defines the priority for any custom meta box
+     * Defines the priority for any custom meta box.
      * 
      * @since   0.1.0
-     * @access  protected
      * @var     string
      */
     protected $meta_priority = 'high';
     
     /**
-     * The construct method which run on instantiation
+     * The construct method which run on instantiation.
      * 
      * This method runs once the class has been initialised. It needs to be called
      * by all child classes as there are a number of action hooks included here
-     * that all custom post types need to register
+     * that all custom post types need to register.
      * 
      * @since   0.1.0
-     * @access  protected
      * @return  void
      */
     protected function __construct() {
@@ -141,10 +145,10 @@ abstract class Custom_Post_Type {
     }
     
     /**
-     * Set the defaults for the main arguments
+     * Set the defaults for the main arguments.
      * 
      * @since 	0.1.0
-     * @access	protected
+     * @global  object  $fsesu  Instance of the main plugin class.
      * @return	void
      */
     protected function set_defaults() {
@@ -219,10 +223,9 @@ abstract class Custom_Post_Type {
     }
     
     /**
-     * Method to register the post type 
+     * Method to register the post type.
      * 
      * @since 	0.1.0
-     * @access 	public
      * @return	void
      */
     public function register_post_type() {
@@ -231,10 +234,9 @@ abstract class Custom_Post_Type {
     }
     
     /**
-     * Method to register a custom taxonomy for the post type 
+     * Method to register a custom taxonomy for the post type.
      * 
      * @since 	0.1.0
-     * @access 	public
      * @return	void
      */
     public function register_taxonomy() {
@@ -246,7 +248,6 @@ abstract class Custom_Post_Type {
      * Return an instance of this class.
      *
      * @since    0.1.0
-     * @access   public
      * @return   object    A single instance of this class.
      */
     public static function init() {
@@ -260,11 +261,12 @@ abstract class Custom_Post_Type {
     }
     
     /**
-     * 
+     * This method defines
      *
-     * @since    0.1.0
-     * @access   public
-     * @return   void    
+     * @since   0.1.0
+     * @global  object  $fsesu      Instance of the main plugin class.
+     * @param   string  $post_type  The post type of the calling post.
+     * @return  void    
      */
     public function add_meta_box( $post_type ) {
         global $fsesu;
@@ -280,11 +282,11 @@ abstract class Custom_Post_Type {
     }
     
     /**
-     * 
+     * A method to render the custom fields within their own custom meta box.
      *
-     * @since    0.1.0
-     * @access   public
-     * @return   void    
+     * @since   0.1.0
+     * @param   object  $post   The WordPress post object.
+     * @return  void    
      */
     public function render_meta_box( $post ) {
         /* Add an nonce field so we can check for it later */
@@ -315,10 +317,10 @@ abstract class Custom_Post_Type {
     }
     
     /**
-     * 
+     * This method saves the custom fields to the database.
      *
      * @since    0.1.0
-     * @access   public
+     * @param   integer $post_id    The id of the post that is being saved.
      */
     public function save_post_type( $post_id ) {
         

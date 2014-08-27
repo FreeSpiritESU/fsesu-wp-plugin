@@ -1,7 +1,11 @@
 <?php
 /**
- * This class defines the Events Post Type (events are grouped together into the
- * programme for FreeSpirit ESU)
+ * This file contains the class that defines the Events Post Type 
+ * 
+ * The Unit meets weekly for various activities at various locations at various
+ * times. Each meeting is an event that is collated together to produce a 
+ * programme for each term. The class for the event post type is therefore called
+ * Programme as each event is part of the programme.
  *  
  * @package         Wordpress\Plugins\FreeSpiritESU
  * @subpackage      Classes
@@ -16,10 +20,33 @@
 
 namespace FSESU;
 
-class Programme extends Custom_Post_Type {
+/**
+ * Custom Post Type class for managing the Unit Programme.
+ * 
+ * This class extends the abstract class, Custom_Post_Type, and defines the various
+ * elements that are specific to the Events Custom Post Type.
+ * 
+ * @since   0.1.0
+ * 
+ * @see     Custom_Post_Type
+ */
+class Programme extends Custom_Post_Type
+{
     
-    protected function __construct() {
-        
+    /**
+     * Class constructor method.
+     * 
+     * The class constructor method is fired when the class is instantiated (or
+     * cosntructed ;-)). As this class extends the Abstract Class Custom_Post_Type
+     * it defines the specific post type, sets the defaults and adds in specific
+     * elements unique to the Events post type.
+     * 
+     * @since   0.1.0
+     * @global  object  $fsesu  Instance of the main plugin class.
+     * @return  void.
+     */
+    protected function __construct()
+    { 
         global $fsesu;
         
         $this->post_type = 'event';
