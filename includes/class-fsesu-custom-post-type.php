@@ -123,6 +123,14 @@ abstract class Custom_Post_Type
     protected $meta_priority = 'high';
     
     /**
+     * Define the columns to display on the admin list page. 
+     * 
+     * @since   0.1.0
+     * @var     array
+     */
+    protected $columns = array();
+    
+    /**
      * The construct method which run on instantiation.
      * 
      * This method runs once the class has been initialised. It needs to be called
@@ -240,7 +248,7 @@ abstract class Custom_Post_Type
      * @return	void
      */
     public function register_taxonomy() {
-        /* Register the post type */
+        /* Register the new taxonomy */
         register_taxonomy( $this->taxonomy, $this->post_type, $this->tax_arguments );
     }
     
@@ -285,7 +293,7 @@ abstract class Custom_Post_Type
      * A method to render the custom fields within their own custom meta box.
      *
      * @since   0.1.0
-     * @param   object  $post   The WordPress post object.
+     * @param   array   $post   The WordPress post object.
      * @return  void    
      */
     public function render_meta_box( $post ) {
@@ -294,33 +302,44 @@ abstract class Custom_Post_Type
         
         $meta = get_post_meta( $post->ID );
         
-        foreach( $this->fields as $field ) {
-            extract ( $field );
+        echo '<div class="' . $this->post_type . '_custom_meta_box">';
+        foreach( $this->fields as $group ) {
             
-            $default = isset( $default ) ? $default : '';
-            $value = isset( $meta[$id][0] ) ? $meta[$id][0] : $default;
-            
-            echo '<div class="' . $this->post_type . '_meta_' . $id . ' custom_meta_data ' . $class . '">';
-            echo '<label for="' . $id . '">' . $label . '</label>';
-            
-            switch ( $type ) {
-                case 'textarea':
-                    echo '<textarea id="' . $id . '" name="' . $id . '">' . $value . '</textarea>';
-                    break;
-                default:
-                    $value = ( $value ) ? ' value="' . $value . '"' : '';
-                    echo '<input type="' . $type . '" id="' . $id . '" name="' . $id . '"' . $value . '>';
+            echo '<div class="custom_meta_box_group">';
+            foreach( $group as $field ) {
+                extract ( $field );
+                
+                $default = isset( $default ) ? $default : '';
+                $value = isset( $meta[$id][0] ) ? $meta[$id][0] : $default;
+                
+                echo '<span class="' . $this->post_type . '_meta_' . $id . ' custom_meta_data">';
+                echo '<label for="' . $id . '">' . $label . '</label>';
+                
+                switch ( $type ) {
+                    case 'date':
+                        $value = date( 'Y-m-d', $value );
+                        echo '<input type="date" id="' . $id . '" name="' . $id . '" value="' . $value . '">';
+                        break;
+                    case 'textarea':
+                        echo '<textarea id="' . $id . '" name="' . $id . '">' . $value . '</textarea>';
+                        break;
+                    default:
+                        $value = ( $value ) ? ' value="' . $value . '"' : '';
+                        echo '<input type="' . $type . '" id="' . $id . '" name="' . $id . '"' . $value . '>';
+                }
+                
+                echo '</span>';
             }
-            
             echo '</div>';
         }
+        echo '</div>';
     }
     
     /**
      * This method saves the custom fields to the database.
      *
-     * @since    0.1.0
-     * @param   integer $post_id    The id of the post that is being saved.
+     * @since   0.1.0
+     * @param   int     $post_id    The id of the post that is being saved.
      */
     public function save_post_type( $post_id ) {
         
@@ -344,19 +363,38 @@ abstract class Custom_Post_Type
             return;
         }
         
-        foreach ( $this->fields as $field ) {
-            extract ( $field );
-            
-            if ( ! isset( $_POST[ $id ] ) ) return $post_id;
-            
-            switch ( $type ) {
-                case 'text':
-                    update_post_meta( $post_id, $id, sanitize_text_field( $_POST[ $id ] ) );
-                    break;
-                default:
-                    update_post_meta( $post_id, $id, $_POST[ $id ] );
+        foreach ( $this->fields as $group ) {
+            foreach( $group as $field ) {
+                extract ( $field );
+                
+                if ( ! isset( $_POST[ $id ] ) ) return $post_id;
+                
+                switch ( $type ) {
+                    case 'date':
+                        update_post_meta( $post_id, $id, strtotime( $_POST[$id] ) );
+                        break;
+                    case 'text':
+                        update_post_meta( $post_id, $id, sanitize_text_field( $_POST[ $id ] ) );
+                        break;
+                    default:
+                        update_post_meta( $post_id, $id, $_POST[ $id ] );
+                }
             }
         }
+    }
+    
+    /**
+     * Define the columns to be displayed on the All Items page.
+     * 
+     * @since   0.1.0
+     * @param   array   $columns    The default columns displayed by WP_List_Table.
+     * @return  array   $columns    The columns to the displayed for this post type.
+     */
+    public function add_columns( $columns )
+    {
+        $columns = $this->columns;
+        
+        return $columns;
     }
 }
 
