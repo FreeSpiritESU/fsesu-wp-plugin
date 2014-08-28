@@ -32,6 +32,21 @@ namespace FSESU;
  */
 class Programme extends Custom_Post_Type
 {
+    /**
+     * Contains the information regarding the terms
+     * 
+     * @since   0.1.0
+     * @var     array
+     */
+    protected $terms = array();
+    
+    /**
+     * The WordPress date format. 
+     * 
+     * @since   0.1.0
+     * @var     string
+     */
+    protected $dateformat;
     
     /**
      * Class constructor method.
@@ -52,6 +67,7 @@ class Programme extends Custom_Post_Type
         $this->post_type = 'event';
         $this->post_type_plural = 'Events';
         $this->taxonomy = 'programme_type';
+        $this->dateformat = get_option('date_format');
         
         $this->set_defaults();
         
@@ -71,7 +87,7 @@ class Programme extends Custom_Post_Type
         $this->tax_arguments['hierarchical'] = true;
         
         /**
-         *  Create Event Post Type Custom Meta Boxes for Edit Page
+         *  Create Event Post Type Custom Meta Boxes for Edit Page.
          *
          *  Generates the meta boxes for the custom information on the edit pages of the
          *  custom event post type.
@@ -81,7 +97,7 @@ class Programme extends Custom_Post_Type
         add_action( 'save_post', array( $this, 'save_post_type' ) );
         
         /**
-         *  Create Event Post Type Columns
+         *  Create Event Post Type Columns.
          *
          *  Generates the columns for display on the main summary page of the
          *  custom event post type.
@@ -91,6 +107,15 @@ class Programme extends Custom_Post_Type
         add_action( 'manage_event_posts_custom_column', array( $this, 'render_columns' ), 2, 1);
         add_filter( 'manage_edit-event_sortable_columns', array( $this, 'define_sortable_columns') );
         add_filter( 'pre_get_posts', array( $this, 'orderby_sortable_columns' ), 1 );
+        
+        /**
+         * Set the default term variables.
+         * 
+         * This sets up what the current term is today, what the last term was and
+         * what the next term will be.
+         */
+        $this->get_terms( strtotime( date( $this->dateformat ) ) );
+        add_shortcode( 'programme', array( $this, 'render_programme' ) );
         
         /**
          * Call the parent constructor method to finish registering the various
@@ -138,92 +163,6 @@ class Programme extends Custom_Post_Type
         );
         
         register_taxonomy( $taxonomy, $this->post_type, $location_arguments );
-    }
-    
-    /**
-     * Define the custom fields to be used by the Event post type.
-     * 
-     * Long description.
-     * 
-     * @since   0.1.0
-     * @return  void    Nothing returned, only sets up the $fields array
-     */
-    private function set_fields()
-    {
-        /* Define the custom fields needed by the Events custom post type */
-        $this->fields = array(
-            array(
-                array(
-                    'label'         => 'Start Date',
-                    'id'            => 'start_date',
-                    'type'          => 'date',
-                    'description'   => 'The date the event starts on',
-                    'default'       => strtotime( 'Monday' )
-                ),
-                array(
-                    'label'         => 'Start Time',
-                    'id'            => 'start_time',
-                    'type'          => 'time',
-                    'description'   => 'The time the event starts',
-                    'default'       => '19:00'
-                )
-            ),
-            array( 
-                array(
-                    'label'         => 'End Date',
-                    'id'            => 'end_date',
-                    'type'          => 'date',
-                    'description'   => 'The date the event ends on',
-                    'default'       => strtotime( 'Monday' )
-                ),
-                array(
-                    'label'         => 'End Time',
-                    'id'            => 'end_time',
-                    'type'          => 'time',
-                    'description'   => 'The time the event ends',
-                    'default'       => '21:00'
-                )
-            ),
-            array(
-                array(
-                    'label'         => 'Cost',
-                    'id'            => 'cost',
-                    'type'          => 'number',
-                    'description'   => 'The cost of the event (if any)',
-                    'default'       => 0
-                ),
-                array(
-                    'label'         => 'Link',
-                    'id'            => 'link',
-                    'type'          => 'url',
-                    'description'   => 'Link to the event details',
-                    'default'       => ''
-                )
-            )
-        );
-    }
-    
-    /**
-     * Define the custom columns to be used by the Event post type.
-     * 
-     * Long description.
-     * 
-     * @since   0.1.0
-     * @global  object  $fsesu  Instance of the main plugin class. 
-     * @return  void    Nothing returned, only sets up the $fields array
-     */
-    private function set_columns()
-    {
-        global $fsesu;
-        
-        $this->columns = array(
-            'cb'            => '<input type="checkbox" />',
-            'event_date'    => __( 'Date', $fsesu->get_domain() ),
-            'title'         => __( 'Event', $fsesu->get_domain() ),
-            'location'      => __( 'Location', $fsesu->get_domain() ),
-            'cost'          => __( 'Cost', $fsesu->get_domain() ),
-            'type'          => __( 'Type', $fsesu->get_domain() ),
-        );
     }
     
     /**
@@ -352,5 +291,306 @@ class Programme extends Custom_Post_Type
                 }
             }
         }
+    }
+    
+    /**
+     * Short description.
+     * 
+     * Long description.
+     * 
+     * @since x.x.x
+     * @access (for functions: only use if private)
+     * 
+     * @see Function/method/class relied on
+     * @link URL
+     * @global type $varname Short description.
+     * 
+     * @param  type $var Description.
+     * @param  type $var Optional. Description.
+     * @return type Description.
+     */
+    public function render_programme()
+    {
+        global $wp;
+        
+        if ( isset( $_GET['term'] ) ) {
+            $this->get_terms( $_GET['term'] );
+        }
+        
+        $start = $this->terms['current']['start'];
+        $end = $this->terms['current']['end'];
+        $url = get_page_link();
+        
+        $args = array( 
+            'post_type'     => 'event',
+            'meta_key'      => 'start_date',
+            'orderby'       => 'meta_value_num',
+            'order'         => 'ASC'
+        );
+    
+        if ( ! isset( $_GET['all'] ) ) {
+            $args['meta_query'] =array(
+        		array(
+        			'key'       => 'start_date',
+        			'value'     => array( $start, $end ),
+        			'type'      => 'numeric',
+        			'compare'   => 'BETWEEN',
+        		),
+        	);
+        }
+        
+        $programme = <<<EOT
+            <div class='alignleft'>
+                <a href='$url?term={$this->terms['previous']['start']}'>
+                    <i class='fa fa-chevron-left'></i> Previous Term
+                </a>
+            </div>
+            <div class='alignright textright'>
+                <a href='$url?term={$this->terms['next']['start']}'>
+                    Next Term <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+            <div class='aligncenter textcenter'>
+                <a href='$url?all'>
+                    Whole Programme
+                </a><br>
+                <a href='$url'>
+                    Current Programme
+                </a>
+            </div>
+            
+EOT;
+        $programme .= $this->render_programme_table( $args );
+        
+        return $programme;
+    }
+    
+    
+    
+    
+    
+    /**
+     * Short description.
+     * 
+     * Long description.
+     * 
+     * @since x.x.x
+     * @access (for functions: only use if private)
+     * 
+     * @see Function/method/class relied on
+     * @link URL
+     * @global type $varname Short description.
+     * 
+     * @param  type $var Description.
+     * @param  type $var Optional. Description.
+     * @return type Description.
+     */
+    private function get_terms( $date )
+    {
+        /**
+         * Define the years based on the $date parameter
+         */
+        $year = date( 'Y', $date );
+        $next_year = date( 'Y', $date ) + 1;
+        $last_year = date( 'Y', $date ) - 1;
+        
+        /**
+         * Define the easter dates based on the $date parameter
+         */
+        $easter = easter_date( $year );
+        $next_easter = easter_date( $next_year );
+        $last_easter = easter_date( $last_year );
+        
+        /**
+         * Define the term details based on the $date parameter
+         */
+        $spring = array( 
+            'name'      => 'Spring ' . $year,
+            'start'     => strtotime( '01 January ' . $year ),
+            'end'       => $easter
+        );
+        $next_spring = array( 
+            'name'      => 'Spring ' . $next_year,
+            'start'     => strtotime( '01 January ' . $next_year ),
+            'end'       => $next_easter
+        );
+        $summer = array( 
+            'name'      => 'Summer ' . $year,
+            'start'     => $easter + 86400,
+            'end'       => strtotime( '15 August ' . $year )
+        );
+        $last_autumn = array( 
+            'name'      => 'Autumn ' . $last_year,
+            'start'     => strtotime( '16 August ' . $last_year ),
+            'end'       => strtotime( '31 December ' . $last_year )
+        );
+        $autumn = array( 
+            'name'      => 'Autumn ' . $year,
+            'start'     => strtotime( '16 August ' . $year ),
+            'end'       => strtotime( '31 December ' . $year )
+        );
+        
+        /**
+         * Define the term dates based on the $date parameter
+         */
+        if ( $date < $easter ) {
+            $this->terms['current'] = $spring;
+            $this->terms['next'] = $summer;
+            $this->terms['previous'] = $last_autumn;
+        } elseif ( $date > $easter
+        && $date < strtotime( '15 August ' . $year ) ) {
+            $this->terms['current'] = $summer;
+            $this->terms['next'] = $autumn;
+            $this->terms['previous'] = $spring;
+        } elseif ( $date > strtotime( '15 August ' . $year ) ) {
+            $this->terms['current'] = $autumn;
+            $this->terms['next'] = $next_spring;
+            $this->terms['previous'] = $summer;
+        }
+    }
+    
+    /**
+     * Short description.
+     * 
+     * Long description.
+     * 
+     * @since x.x.x
+     * @access (for functions: only use if private)
+     * 
+     * @see Function/method/class relied on
+     * @link URL
+     * @global type $varname Short description.
+     * 
+     * @param  type $var Description.
+     * @param  type $var Optional. Description.
+     * @return type Description.
+     */
+    private function render_programme_table( $args ) {
+        
+        $query = new \WP_Query( $args );
+        
+        $output = <<<EOT
+            <table class='programme'>
+                <thead>
+                    <th class='date textcenter'>Date</th>
+                    <th class='activity textcenter'>Activity</th>
+                </thead>
+                
+EOT;
+        
+        while ( $query->have_posts() ):
+            $query->the_post();
+            $id = get_the_ID();
+            $startdate = get_post_meta( $id, 'start_date', true );
+            $enddate = get_post_meta( $id, 'end_date', true );
+            if ( date( $this->dateformat, $startdate ) == date( $this->dateformat, $enddate ) ) {
+                $date = date( 'd M', $startdate );
+            } elseif ( date( 'm', $startdate ) == date( 'm', $enddate ) ) {
+                $date = date( 'd', $startdate ) . ' - ' . date( 'd M', $enddate );
+            } elseif ( date( 'y', $startdate ) == date( 'y', $enddate ) ) {
+                $date = date( 'd M', $startdate ) . ' - ' . date( 'd M', $enddate );
+            } else {
+                $date = date( 'd M Y', $startdate ) . ' - ' . date( 'd M Y', $enddate );
+            }
+            $activity = get_the_title();
+            $output .= <<<EOD
+                <tr>
+                    <th class='textcenter'>$date</th>
+                    <td class='textcenter'>$activity</td>
+                </tr>
+                
+EOD;
+        endwhile;
+        wp_reset_postdata();
+        
+        $output .= "</table>";
+        
+        return $output;
+    }
+    
+    /**
+     * Define the custom fields to be used by the Event post type.
+     * 
+     * Long description.
+     * 
+     * @since   0.1.0
+     * @return  void    Nothing returned, only sets up the $fields array
+     */
+    private function set_fields()
+    {
+        /* Define the custom fields needed by the Events custom post type */
+        $this->fields = array(
+            array(
+                array(
+                    'label'         => 'Start Date',
+                    'id'            => 'start_date',
+                    'type'          => 'date',
+                    'description'   => 'The date the event starts on',
+                    'default'       => strtotime( 'Monday' )
+                ),
+                array(
+                    'label'         => 'Start Time',
+                    'id'            => 'start_time',
+                    'type'          => 'time',
+                    'description'   => 'The time the event starts',
+                    'default'       => '19:00'
+                )
+            ),
+            array( 
+                array(
+                    'label'         => 'End Date',
+                    'id'            => 'end_date',
+                    'type'          => 'date',
+                    'description'   => 'The date the event ends on',
+                    'default'       => strtotime( 'Monday' )
+                ),
+                array(
+                    'label'         => 'End Time',
+                    'id'            => 'end_time',
+                    'type'          => 'time',
+                    'description'   => 'The time the event ends',
+                    'default'       => '21:00'
+                )
+            ),
+            array(
+                array(
+                    'label'         => 'Cost',
+                    'id'            => 'cost',
+                    'type'          => 'number',
+                    'description'   => 'The cost of the event (if any)',
+                    'default'       => 0
+                ),
+                array(
+                    'label'         => 'Link',
+                    'id'            => 'link',
+                    'type'          => 'url',
+                    'description'   => 'Link to the event details',
+                    'default'       => ''
+                )
+            )
+        );
+    }
+    
+    /**
+     * Define the custom columns to be used by the Event post type.
+     * 
+     * Long description.
+     * 
+     * @since   0.1.0
+     * @global  object  $fsesu  Instance of the main plugin class. 
+     * @return  void    Nothing returned, only sets up the $fields array
+     */
+    private function set_columns()
+    {
+        global $fsesu;
+        
+        $this->columns = array(
+            'cb'            => '<input type="checkbox" />',
+            'event_date'    => __( 'Date', $fsesu->get_domain() ),
+            'title'         => __( 'Event', $fsesu->get_domain() ),
+            'location'      => __( 'Location', $fsesu->get_domain() ),
+            'cost'          => __( 'Cost', $fsesu->get_domain() ),
+            'type'          => __( 'Type', $fsesu->get_domain() ),
+        );
     }
 }
