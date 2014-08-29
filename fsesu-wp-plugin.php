@@ -62,6 +62,24 @@ class Plugin {
     protected $domain;
     
     /**
+     * Short description. 
+     * 
+     * @since x.x.x
+     * @access (private, protected, or public)
+     * @var type $var Description.
+     */
+    protected $styles = array();
+    
+    /**
+     * Short description. 
+     * 
+     * @since x.x.x
+     * @access (private, protected, or public)
+     * @var type $var Description.
+     */
+    protected $scripts = array();
+    
+    /**
      * 
      */
     protected $categories = array(
@@ -345,8 +363,11 @@ class Plugin {
      *
      * @since    0.1.0
      */
-    public function enqueue_styles() {
-        //wp_enqueue_style( $this->plugin_slug . '-plugin-styles', plugins_url( 'assets/css/public.css', __FILE__ ), array(), self::VERSION );
+    public function enqueue_styles()
+    {
+        foreach( $this->styles as $style ) {
+            wp_enqueue_style( 'fsesu-' . $style['slug'], $style['location'], $style['dependencies'], $style['version'] );
+        }
     }
 
     /**
@@ -354,8 +375,46 @@ class Plugin {
      *
      * @since    0.1.0
      */
-    public function enqueue_scripts() {
-        //wp_enqueue_script( $this->plugin_slug . '-plugin-script', plugins_url( 'assets/js/public.js', __FILE__ ), array( 'jquery' ), self::VERSION );
+    public function enqueue_scripts()
+    {
+        foreach( $this->scripts as $script ) {
+            wp_enqueue_script( 'fsesu-' . $script['slug'], $script['location'], $script['dependencies'], $script['version'] );
+    }
+    
+    /**
+	 * Registers the filters with WordPress and the respective objects and
+	 * their methods.
+	 *
+	 * @param  string    $hook        The name of the WordPress hook to which we're registering a callback.
+	 * @param  object    $component   The object that contains the method to be called when the hook is fired.
+	 * @param  string    $callback    The function that resides on the specified component.
+	 */
+    public function add_style( $slug, $location, $dependencies = array(), $version = null )
+    {
+        $this->styles[] = array(
+            'slug'          => $slug,
+            'location'      => $location,
+            'dependencies'  => $dependencies,
+            'version'       => $version
+        );
+    }
+    
+    /**
+	 * Registers the filters with WordPress and the respective objects and
+	 * their methods.
+	 *
+	 * @param  string    $hook        The name of the WordPress hook to which we're registering a callback.
+	 * @param  object    $component   The object that contains the method to be called when the hook is fired.
+	 * @param  string    $callback    The function that resides on the specified component.
+	 */
+    public function add_script( $slug, $location, $dependencies = array(), $version = null )
+    {
+        $this->scripts[] = array(
+            'slug'          => $slug,
+            'location'      => $location,
+            'dependencies'  => $dependencies,
+            'version'       => $version
+        );
     }
 
 }
