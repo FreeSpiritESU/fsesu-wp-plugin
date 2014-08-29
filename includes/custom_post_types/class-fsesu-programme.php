@@ -15,7 +15,7 @@
  * @since           0.1.0
  * @version         0.1.0
  * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
- * @lastmodified    27 August 2014
+ * @lastmodified    29 August 2014
  */
 
 namespace FSESU;
@@ -116,6 +116,10 @@ class Programme extends Custom_Post_Type
          */
         $this->get_terms( strtotime( date( $this->dateformat ) ) );
         add_shortcode( 'programme', array( $this, 'render_programme' ) );
+        
+        if ( ! is_admin() ) {
+            $fsesu->add_style( 'programme', FSESU_URI . 'assets/css/programme.css' );
+        }
         
         /**
          * Call the parent constructor method to finish registering the various
@@ -340,6 +344,7 @@ class Programme extends Custom_Post_Type
         }
         
         $programme = <<<EOT
+        <div class='programme'>
             <div class='alignleft'>
                 <a href='$url?term={$this->terms['previous']['start']}'>
                     <i class='fa fa-chevron-left'></i> Previous Term
@@ -361,6 +366,7 @@ class Programme extends Custom_Post_Type
             
 EOT;
         $programme .= $this->render_programme_table( $args );
+        $programme .= '</div>';
         
         return $programme;
     }
@@ -470,11 +476,12 @@ EOT;
         $query = new \WP_Query( $args );
         
         $output = <<<EOT
-            <table class='programme'>
+            <table class='programme-table'>
                 <thead>
-                    <th class='date textcenter'>Date</th>
-                    <th class='activity textcenter'>Activity</th>
+                    <th class='date'>Date</th>
+                    <th class='activity'>Activity</th>
                 </thead>
+                <tbody>
                 
 EOT;
         
@@ -494,16 +501,19 @@ EOT;
             }
             $activity = get_the_title();
             $output .= <<<EOD
-                <tr>
-                    <th class='textcenter'>$date</th>
-                    <td class='textcenter'>$activity</td>
-                </tr>
+                    <tr>
+                        <th>$date</th>
+                        <td>$activity</td>
+                    </tr>
                 
 EOD;
         endwhile;
         wp_reset_postdata();
         
-        $output .= "</table>";
+        $output .= <<<EOT
+                </tbody>
+            </table>
+EOT;
         
         return $output;
     }

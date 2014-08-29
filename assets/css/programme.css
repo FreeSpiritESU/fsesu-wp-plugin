@@ -1,0 +1,42 @@
+/**
+ * This file contains the styles used for the Programme Custom Post Type
+ *  
+ * @package         Wordpress\Plugins\FreeSpiritESU
+ * @subpackage      Stylesheets
+ * @author          Richard Perry <http://www.perry-online.me.uk/>
+ * @copyright       Copyright (c) 2014 FreeSpirit ESU
+ * @license         http://www.gnu.org/licenses/gpl-2.0.html
+ * @since           0.1.0
+ * @version         0.1.0
+ * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
+ * @lastmodified    29 August 2014
+ */
+
+.programme .aligncenter {
+    max-width: 150px;
+    overflow: hidden;
+    padding-bottom: 10px;
+    width: 50%;
+}
+.programme-table {
+    margin: 0 auto;
+    width: 75%;
+}
+.programme-table thead th {
+    background: #a00;
+}
+.programme-table tbody th {
+    font-weight: normal;
+}
+.programme-table .date {
+    width: 30%;
+}
+.programme-table,
+.programme-table th,
+.programme-table td {
+    border-color: #000;
+    text-align: center;
+}
+.programme-table .even {
+    background: #eee;
+}

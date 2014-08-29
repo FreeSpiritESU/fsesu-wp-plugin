@@ -32,7 +32,7 @@
  * @copyright       Copyright (c) 2014 FreeSpirit ESU
  * @since           0.1.0
  * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
- * @lastmodified    21 August 2014
+ * @lastmodified    29 August 2014
  */
 
 namespace FSESU;
@@ -379,6 +379,7 @@ class Plugin {
     {
         foreach( $this->scripts as $script ) {
             wp_enqueue_script( 'fsesu-' . $script['slug'], $script['location'], $script['dependencies'], $script['version'] );
+        }
     }
     
     /**
