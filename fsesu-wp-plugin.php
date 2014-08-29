@@ -422,7 +422,7 @@ class Plugin {
     public function enqueue_admin_scripts()
     {
         foreach( $this->admin_scripts as $script ) {
-            wp_enqueue_script( 'fsesu-' . $script['slug'], $script['location'], $script['dependencies'], $script['version'] );
+            wp_enqueue_script( 'fsesu-' . $script['slug'], $script['location'], $script['dependencies'], $script['version'], $script['in_footer'] );
         }
     }
     
@@ -488,13 +488,14 @@ class Plugin {
 	 * @param  object    $component   The object that contains the method to be called when the hook is fired.
 	 * @param  string    $callback    The function that resides on the specified component.
 	 */
-    public function add_admin_script( $slug, $location, $dependencies = array(), $version = null )
+    public function add_admin_script( $slug, $location, $dependencies = array(), $version = null, $in_footer = false )
     {
         $this->admin_scripts[] = array(
             'slug'          => $slug,
             'location'      => $location,
             'dependencies'  => $dependencies,
-            'version'       => $version
+            'version'       => $version,
+            'in_footer'     => $in_footer
         );
     }
 

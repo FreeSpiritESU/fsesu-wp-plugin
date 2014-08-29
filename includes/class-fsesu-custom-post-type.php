@@ -309,7 +309,7 @@ abstract class Custom_Post_Type
                 switch ( $type ) {
                     case 'datetime':
                     case 'date':
-                        $value = date( 'Y-m-d', $value );
+                        $value = date( 'd M Y', $value );
                         echo '<input type="' . $type . '" id="' . $id . '" name="' . $id . '" value="' . $value . '">';
                         break;
                     case 'textarea':

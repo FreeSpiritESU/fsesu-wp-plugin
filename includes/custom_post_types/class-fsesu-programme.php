@@ -120,7 +120,7 @@ class Programme extends Custom_Post_Type
         if ( ! is_admin() ) {
             $fsesu->add_style( 'programme', FSESU_URI . 'assets/css/programme.css' );
         } else {
-            $fsesu->add_admin_script( 'datepicker', FSESU_URI . 'assets/js/datepicker.js', array( 'jquery-ui-datepicker', 'jquery' ) );
+            $fsesu->add_admin_script( 'datepicker', FSESU_URI . 'assets/js/datepicker.js', array( 'jquery-ui-datepicker', 'jquery' ), null, true );
             $fsesu->add_admin_style( 'jquery-ui-style', FSESU_URI . 'assets/css/jquery-ui.css' );
         }
         
