@@ -17,7 +17,7 @@
  * @since           0.1.0
  * @version         0.1.0
  * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
- * @lastmodified    27 August 2014
+ * @lastmodified    29 August 2014
  */
 
 namespace FSESU;
@@ -140,7 +140,10 @@ abstract class Custom_Post_Type
      * @since   0.1.0
      * @return  void
      */
-    protected function __construct() {
+    protected function __construct()
+    {
+        global $fsesu;
+        
         /* Add action to register the post type, if the post type does not already exist */
         if( ! post_type_exists( $this->post_type ) ) {
             add_action( 'init', array( $this, 'register_post_type' ) );
@@ -150,16 +153,18 @@ abstract class Custom_Post_Type
         if( $this->taxonomy ) {
             add_action( 'init', array( $this, 'register_taxonomy' ), 0 );
         }
+        
+        $fsesu->add_admin_style( 'meta-box', FSESU_URI . 'assets/css/meta-box.css' );
     }
     
     /**
      * Set the defaults for the main arguments.
      * 
      * @since 	0.1.0
-     * @global  object  $fsesu  Instance of the main plugin class.
      * @return	void
      */
-    protected function set_defaults() {
+    protected function set_defaults()
+    {
         global $fsesu;
         
         $name = ucwords( str_replace( '_', ' ', $this->post_type ) );
@@ -253,22 +258,6 @@ abstract class Custom_Post_Type
     }
     
     /**
-     * Return an instance of this class.
-     *
-     * @since    0.1.0
-     * @return   object    A single instance of this class.
-     */
-    public static function init() {
-        $c = get_called_class();
-        if ( !isset( self::$instance[$c] ) ) {
-            self::$instance[$c] = new $c();
-            self::$instance[$c]->init();
-        }
-
-        return self::$instance[$c];
-    }
-    
-    /**
      * This method defines
      *
      * @since   0.1.0
@@ -276,7 +265,8 @@ abstract class Custom_Post_Type
      * @param   string  $post_type  The post type of the calling post.
      * @return  void    
      */
-    public function add_meta_box( $post_type ) {
+    public function add_meta_box( $post_type )
+    {
         global $fsesu;
         
         add_meta_box( 
@@ -296,7 +286,8 @@ abstract class Custom_Post_Type
      * @param   array   $post   The WordPress post object.
      * @return  void    
      */
-    public function render_meta_box( $post ) {
+    public function render_meta_box( $post )
+    {
         /* Add an nonce field so we can check for it later */
         wp_nonce_field( $this->post_type . '_meta', $this->post_type . '_meta_nonce' );
         
@@ -316,9 +307,10 @@ abstract class Custom_Post_Type
                 echo '<label for="' . $id . '">' . $label . '</label>';
                 
                 switch ( $type ) {
+                    case 'datetime':
                     case 'date':
                         $value = date( 'Y-m-d', $value );
-                        echo '<input type="date" id="' . $id . '" name="' . $id . '" value="' . $value . '">';
+                        echo '<input type="' . $type . '" id="' . $id . '" name="' . $id . '" value="' . $value . '">';
                         break;
                     case 'textarea':
                         echo '<textarea id="' . $id . '" name="' . $id . '">' . $value . '</textarea>';
@@ -341,7 +333,8 @@ abstract class Custom_Post_Type
      * @since   0.1.0
      * @param   int     $post_id    The id of the post that is being saved.
      */
-    public function save_post_type( $post_id ) {
+    public function save_post_type( $post_id )
+    {
         
         /* Check if the nonce is set. */
         if ( ! isset( $_POST[$this->post_type . '_meta_nonce'] ) ) {
@@ -396,267 +389,25 @@ abstract class Custom_Post_Type
         
         return $columns;
     }
+    
+    
+    
+    
+    
+    /**
+     * Return an instance of this class.
+     *
+     * @since    0.1.0
+     * @return   object    A single instance of this class.
+     */
+    public static function init()
+    {
+        $c = get_called_class();
+        if ( !isset( self::$instance[$c] ) ) {
+            self::$instance[$c] = new $c();
+            self::$instance[$c]->init();
+        }
+
+        return self::$instance[$c];
+    }
 }
-
-/*class Custom_Post_Type {
-    public $post_type_name;
-    public $post_type_args;
-    public $post_type_labels;
-    
-    /* Class constructor 
-    public function __construct( $name, $args = array(), $labels = array() )
-    {
-        // Set some important variables
-        $this->post_type_name		= strtolower( str_replace( ' ', '_', $name ) );
-        $this->post_type_args 		= $args;
-        $this->post_type_labels 	= $labels;
-        
-        // Add action to register the post type, if the post type does not already exist
-        if( ! post_type_exists( $this->post_type_name ) )
-        {
-            add_action( 'init', array( &$this, 'register_post_type' ) );
-        }
-        
-        // Listen for the save post hook
-        $this->save();
-    }
-    
-    
-    
-    /* Method to attach the taxonomy to the post type 
-    public function add_taxonomy( $name, $args = array(), $labels = array() )
-    {
-        if( ! empty( $name ) )
-        {
-            // We need to know the post type name, so the new taxonomy can be attached to it.
-            $post_type_name = $this->post_type_name;
-
-            // Taxonomy properties
-            $taxonomy_name		= strtolower( str_replace( ' ', '_', $name ) );
-            $taxonomy_labels	= $labels;
-            $taxonomy_args		= $args;
-
-            if( ! taxonomy_exists( $taxonomy_name ) )
-            {
-                /* Create taxonomy and attach it to the object type (post type) 
-            }
-            else
-            {
-                /* The taxonomy already exists. We are going to attach the existing taxonomy to the object type (post type) 
-            }
-            
-            //Capitilize the words and make it plural
-            $name 		= ucwords( str_replace( '_', ' ', $name ) );
-            $plural 	= $name . 's';
-            
-            // Default labels, overwrite them with the given labels.
-            $labels = array_merge(
-            
-                // Default
-                array(
-                    'name' 					=> _x( $plural, 'taxonomy general name' ),
-                    'singular_name' 		=> _x( $name, 'taxonomy singular name' ),
-                    'search_items' 			=> __( 'Search ' . $plural ),
-                    'all_items' 			=> __( 'All ' . $plural ),
-                    'parent_item' 			=> __( 'Parent ' . $name ),
-                    'parent_item_colon' 	=> __( 'Parent ' . $name . ':' ),
-                    'edit_item' 			=> __( 'Edit ' . $name ),
-                    'update_item' 			=> __( 'Update ' . $name ),
-                    'add_new_item' 			=> __( 'Add New ' . $name ),
-                    'new_item_name' 		=> __( 'New ' . $name . ' Name' ),
-                    'menu_name' 			=> __( $name ),
-                ),
-        
-                // Given labels
-                $taxonomy_labels
-        
-            );
-        
-            // Default arguments, overwritten with the given arguments
-            $args = array_merge(
-        
-                // Default
-                array(
-                    'label'					=> $plural,
-                    'labels'				=> $labels,
-                    'public' 				=> true,
-                    'show_ui' 				=> true,
-                    'show_in_nav_menus' 	=> true,
-                    '_builtin' 				=> false,
-                ),
-        
-                // Given
-                $taxonomy_args
-        
-            );
-            
-            // Add the taxonomy to the post type
-            add_action( 'init',
-                function() use( $taxonomy_name, $post_type_name, $args )
-                {
-                    register_taxonomy( $taxonomy_name, $post_type_name, $args );
-                }
-            );
-            
-            add_action( 'init',
-                function() use( $taxonomy_name, $post_type_name )
-                {
-                    register_taxonomy_for_object_type( $taxonomy_name, $post_type_name );
-                }
-            );
-        }
-    }
-    
-    /* Attaches meta boxes to the post type 
-        public function add_meta_box( $title, $fields = array(), $context = 'normal', $priority = 'default' )
-    {
-        if( ! empty( $title ) )
-        {
-            // We need to know the Post Type name again
-            $post_type_name = $this->post_type_name;
-
-            // Meta variables
-            $box_id 		= strtolower( str_replace( ' ', '_', $title ) );
-            $box_title		= ucwords( str_replace( '_', ' ', $title ) );
-            $box_context	= $context;
-            $box_priority	= $priority;
-            
-            // Make the fields global
-            global $custom_fields;
-            $custom_fields[$title] = $fields;
-            
-            add_action( 'admin_init',
-                function() use( $box_id, $box_title, $post_type_name, $box_context, $box_priority, $fields )
-                {
-                    add_meta_box(
-                        $box_id,
-                        $box_title,
-                        function( $post, $data )
-                        {
-                            global $post;
-                            
-                            // Nonce field for some validation
-                            wp_nonce_field( plugin_basename( __FILE__ ), 'custom_post_type' );
-                            
-                            // Get all inputs from $data
-                            $custom_fields = $data['args'][0];
-                            
-                            // Get the saved values
-                            $meta = get_post_custom( $post->ID );
-                            
-                            // Check the array and loop through it
-                            if( ! empty( $custom_fields ) )
-                            {
-                                /* Loop through $custom_fields 
-                                foreach( $custom_fields as $label => $type )
-                                {
-                                    $field_id_name 	= strtolower( str_replace( ' ', '_', $data['id'] ) ) . '_' . strtolower( str_replace( ' ', '_', $label ) );
-                                    
-                                    echo '<label for="' . $field_id_name . '">' . $label . '</label><input type="text" name="custom_meta[' . $field_id_name . ']" id="' . $field_id_name . '" value="' . $meta[$field_id_name][0] . '" />';
-                                }
-                            }
-                        
-                        },
-                        $post_type_name,
-                        $box_context,
-                        $box_priority,
-                        array( $fields )
-                    );
-                }
-            );
-        }
-        
-    }
-    
-    /* Listens for when the post type being saved 
-    public function save()
-    {
-        // Need the post type name again
-        $post_type_name = $this->post_type_name;
-    
-        add_action( 'save_post',
-            function() use( $post_type_name )
-            {
-                // Deny the WordPress autosave function
-                if( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) return;
-
-                if ( ! wp_verify_nonce( $_POST['custom_post_type'], plugin_basename(__FILE__) ) ) return;
-            
-                global $post;
-                
-                if( isset( $_POST ) && isset( $post->ID ) && get_post_type( $post->ID ) == $post_type_name )
-                {
-                    global $custom_fields;
-                    
-                    // Loop through each meta box
-                    foreach( $custom_fields as $title => $fields )
-                    {
-                        // Loop through all fields
-                        foreach( $fields as $label => $type )
-                        {
-                            $field_id_name 	= strtolower( str_replace( ' ', '_', $title ) ) . '_' . strtolower( str_replace( ' ', '_', $label ) );
-                            
-                            update_post_meta( $post->ID, $field_id_name, $_POST['custom_meta'][$field_id_name] );
-                        }
-                    
-                    }
-                }
-            }
-        );
-    }
-    
-    public static function beautify( $string )
-    {
-        return ucwords( str_replace( '_', ' ', $string ) );
-    }
-    
-    public static function uglify( $string )
-    {
-        return strtolower( str_replace( ' ', '_', $string ) );
-    }
-    
-    public static function pluralize( $string )
-    {
-        $last = $string[strlen( $string ) - 1];
-        
-        if( $last == 'y' )
-        {
-            $cut = substr( $string, 0, -1 );
-            //convert y to ies
-            $plural = $cut . 'ies';
-        }
-        else
-        {
-            // just attach an s
-            $plural = $string . 's';
-        }
-        
-        return $plural;
-    }
-
-}
-
-
-
-
-
-    $book = new Custom_Post_Type( 'Book' );
-    $book->add_taxonomy( 'category' );
-    $book->add_taxonomy( 'author' );
-    
-    $book->add_meta_box( 
-        'Book Info', 
-        array(
-            'Year' => 'text',
-            'Genre' => 'text'
-        )
-    );
-    
-    $book->add_meta_box( 
-        'Author Info', 
-        array(
-            'Name' => 'text',
-            'Nationality' => 'text',
-            'Birthday' => 'text'
-        )
-    ); */

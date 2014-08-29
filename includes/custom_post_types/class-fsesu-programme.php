@@ -119,7 +119,11 @@ class Programme extends Custom_Post_Type
         
         if ( ! is_admin() ) {
             $fsesu->add_style( 'programme', FSESU_URI . 'assets/css/programme.css' );
+        } else {
+            $fsesu->add_admin_script( 'datepicker', FSESU_URI . 'assets/js/datepicker.js', array( 'jquery-ui-datepicker', 'jquery' ) );
+            $fsesu->add_admin_style( 'jquery-ui-style', FSESU_URI . 'assets/css/jquery-ui.css' );
         }
+        
         
         /**
          * Call the parent constructor method to finish registering the various
@@ -193,8 +197,8 @@ class Programme extends Custom_Post_Type
                 
                 // Format the times
                 $time_format = get_option('time_format');
-                $starttime = date( $time_format, strtotime( $meta['start_time'][0] ) );
-                $endtime = date( $time_format, strtotime( $meta['end_time'][0] ) );
+                $starttime = date( $time_format, strtotime( $meta['start_date'][0] ) );
+                $endtime = date( $time_format, strtotime( $meta['end_date'][0] ) );
                 
                 // Output the full date details
                 if ( $start == $end ) {
@@ -326,10 +330,11 @@ class Programme extends Custom_Post_Type
         $url = get_page_link();
         
         $args = array( 
-            'post_type'     => 'event',
-            'meta_key'      => 'start_date',
-            'orderby'       => 'meta_value_num',
-            'order'         => 'ASC'
+            'posts_per_page'    => -1,
+            'post_type'         => 'event',
+            'meta_key'          => 'start_date',
+            'orderby'           => 'meta_value_num',
+            'order'             => 'ASC'
         );
     
         if ( ! isset( $_GET['all'] ) ) {
@@ -476,6 +481,7 @@ EOT;
         $query = new \WP_Query( $args );
         
         $output = <<<EOT
+        
             <table class='programme-table'>
                 <thead>
                     <th class='date'>Date</th>
@@ -501,6 +507,7 @@ EOT;
             }
             $activity = get_the_title();
             $output .= <<<EOD
+            
                     <tr>
                         <th>$date</th>
                         <td>$activity</td>
@@ -511,6 +518,7 @@ EOD;
         wp_reset_postdata();
         
         $output .= <<<EOT
+        
                 </tbody>
             </table>
 EOT;
@@ -534,7 +542,7 @@ EOT;
                 array(
                     'label'         => 'Start Date',
                     'id'            => 'start_date',
-                    'type'          => 'date',
+                    'type'          => 'datetime',
                     'description'   => 'The date the event starts on',
                     'default'       => strtotime( 'Monday' )
                 ),
@@ -550,7 +558,7 @@ EOT;
                 array(
                     'label'         => 'End Date',
                     'id'            => 'end_date',
-                    'type'          => 'date',
+                    'type'          => 'datetime',
                     'description'   => 'The date the event ends on',
                     'default'       => strtotime( 'Monday' )
                 ),

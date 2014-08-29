@@ -80,6 +80,24 @@ class Plugin {
     protected $scripts = array();
     
     /**
+     * Short description. 
+     * 
+     * @since x.x.x
+     * @access (private, protected, or public)
+     * @var type $var Description.
+     */
+    protected $admin_styles = array();
+    
+    /**
+     * Short description. 
+     * 
+     * @since x.x.x
+     * @access (private, protected, or public)
+     * @var type $var Description.
+     */
+    protected $admin_scripts = array();
+    
+    /**
      * 
      */
     protected $categories = array(
@@ -136,6 +154,8 @@ class Plugin {
         /* Enqueue scripts and styles. */
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ), 99 );
+        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ) );
         
         /* Register activation hook. */
         register_activation_hook( __FILE__, array( $this, 'activation' ) );
@@ -371,6 +391,18 @@ class Plugin {
     }
 
     /**
+     * Register and enqueue public-facing style sheet.
+     *
+     * @since    0.1.0
+     */
+    public function enqueue_admin_styles()
+    {
+        foreach( $this->admin_styles as $style ) {
+            wp_enqueue_style( 'fsesu-' . $style['slug'], $style['location'], $style['dependencies'], $style['version'] );
+        }
+    }
+
+    /**
      * Register and enqueues public-facing JavaScript files.
      *
      * @since    0.1.0
@@ -378,6 +410,18 @@ class Plugin {
     public function enqueue_scripts()
     {
         foreach( $this->scripts as $script ) {
+            wp_enqueue_script( 'fsesu-' . $script['slug'], $script['location'], $script['dependencies'], $script['version'] );
+        }
+    }
+
+    /**
+     * Register and enqueues public-facing JavaScript files.
+     *
+     * @since    0.1.0
+     */
+    public function enqueue_admin_scripts()
+    {
+        foreach( $this->admin_scripts as $script ) {
             wp_enqueue_script( 'fsesu-' . $script['slug'], $script['location'], $script['dependencies'], $script['version'] );
         }
     }
@@ -408,9 +452,45 @@ class Plugin {
 	 * @param  object    $component   The object that contains the method to be called when the hook is fired.
 	 * @param  string    $callback    The function that resides on the specified component.
 	 */
+    public function add_admin_style( $slug, $location, $dependencies = array(), $version = null )
+    {
+        $this->admin_styles[] = array(
+            'slug'          => $slug,
+            'location'      => $location,
+            'dependencies'  => $dependencies,
+            'version'       => $version
+        );
+    }
+    
+    /**
+	 * Registers the filters with WordPress and the respective objects and
+	 * their methods.
+	 *
+	 * @param  string    $hook        The name of the WordPress hook to which we're registering a callback.
+	 * @param  object    $component   The object that contains the method to be called when the hook is fired.
+	 * @param  string    $callback    The function that resides on the specified component.
+	 */
     public function add_script( $slug, $location, $dependencies = array(), $version = null )
     {
         $this->scripts[] = array(
+            'slug'          => $slug,
+            'location'      => $location,
+            'dependencies'  => $dependencies,
+            'version'       => $version
+        );
+    }
+    
+    /**
+	 * Registers the filters with WordPress and the respective objects and
+	 * their methods.
+	 *
+	 * @param  string    $hook        The name of the WordPress hook to which we're registering a callback.
+	 * @param  object    $component   The object that contains the method to be called when the hook is fired.
+	 * @param  string    $callback    The function that resides on the specified component.
+	 */
+    public function add_admin_script( $slug, $location, $dependencies = array(), $version = null )
+    {
+        $this->admin_scripts[] = array(
             'slug'          => $slug,
             'location'      => $location,
             'dependencies'  => $dependencies,
