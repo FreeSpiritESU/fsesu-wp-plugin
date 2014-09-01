@@ -197,8 +197,8 @@ class Programme extends Custom_Post_Type
                 
                 // Format the times
                 $time_format = get_option('time_format');
-                $starttime = date( $time_format, strtotime( $meta['start_date'][0] ) );
-                $endtime = date( $time_format, strtotime( $meta['end_date'][0] ) );
+                $starttime = date( $time_format, strtotime( $meta['start_time'][0] ) );
+                $endtime = date( $time_format, strtotime( $meta['end_time'][0] ) );
                 
                 // Output the full date details
                 if ( $start == $end ) {
@@ -280,7 +280,7 @@ class Programme extends Custom_Post_Type
                     
                     /**
                      * If the orderby variable has not been set, set the default
-                     * sort order to the start date in ascending numerical order,
+                     * sort order to the start date in descending numerical order,
                      * but if the orderby variable has been set to event_date or 
                      * location, set the query to the correct column without
                      * specifying asc or desc.
@@ -288,7 +288,7 @@ class Programme extends Custom_Post_Type
                     if( ! isset( $query->query_vars['orderby'] ) ) {
                         $query->set('meta_key', 'start_date');
                         $query->set('orderby', 'meta_value_num');
-                        $query->set('order', 'ASC');
+                        $query->set('order', 'DESC');
                     } elseif ( $query->query_vars['orderby'] == 'event_date' ) {
                         $query->set('meta_key', 'start_date');
                         $query->set('orderby', 'meta_value_num');
