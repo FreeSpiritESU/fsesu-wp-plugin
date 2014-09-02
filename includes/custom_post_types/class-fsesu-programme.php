@@ -317,60 +317,39 @@ class Programme extends Custom_Post_Type
      * @param  type $var Optional. Description.
      * @return type Description.
      */
-    public function render_programme()
+    public function render_programme( $atts )
     {
-        global $wp;
+        extract( shortcode_atts(
+            array(
+                'number'    => -1,
+                'type'      => 'table',
+                'links'     => true,
+            ), $atts )
+        );
         
-        if ( isset( $_GET['term'] ) ) {
-            $this->get_terms( $_GET['term'] );
+        $programme = '<div class="programme">';
+        if ( $links == true ) {
+            $programme .= $this->render_programme_links();
         }
         
-        $start = $this->terms['current']['start'];
-        $end = $this->terms['current']['end'];
-        $url = get_page_link();
-        
         $args = array( 
-            'posts_per_page'    => -1,
+            'posts_per_page'    => $number,
             'post_type'         => 'event',
             'meta_key'          => 'start_date',
             'orderby'           => 'meta_value_num',
             'order'             => 'ASC'
         );
-    
-        if ( ! isset( $_GET['all'] ) ) {
-            $args['meta_query'] =array(
-        		array(
-        			'key'       => 'start_date',
-        			'value'     => array( $start, $end ),
-        			'type'      => 'numeric',
-        			'compare'   => 'BETWEEN',
-        		),
-        	);
+        
+        switch ( $type ) {
+            case 'upcoming':
+                
+                break;
+            case 'table':
+            default:
+                $programme .= $this->render_programme_table( $args );
+                break;
         }
         
-        $programme = <<<EOT
-        <div class='programme'>
-            <div class='alignleft'>
-                <a href='$url?term={$this->terms['previous']['start']}'>
-                    <i class='fa fa-chevron-left'></i> Previous Term
-                </a>
-            </div>
-            <div class='alignright textright'>
-                <a href='$url?term={$this->terms['next']['start']}'>
-                    Next Term <i class="fa fa-chevron-right"></i>
-                </a>
-            </div>
-            <div class='aligncenter textcenter'>
-                <a href='$url?all'>
-                    Whole Programme
-                </a><br>
-                <a href='$url'>
-                    Current Programme
-                </a>
-            </div>
-            
-EOT;
-        $programme .= $this->render_programme_table( $args );
         $programme .= '</div>';
         
         return $programme;
@@ -476,11 +455,75 @@ EOT;
      * @param  type $var Optional. Description.
      * @return type Description.
      */
-    private function render_programme_table( $args ) {
+    private function render_programme_links( )
+    {
+        $url = get_page_link();
+        
+        $links = <<<EOT
+        
+            <div class='alignleft'>
+                <a href='$url?term={$this->terms['previous']['start']}'>
+                    <i class='fa fa-chevron-left'></i> Previous Term
+                </a>
+            </div>
+            <div class='alignright textright'>
+                <a href='$url?term={$this->terms['next']['start']}'>
+                    Next Term <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+            <div class='aligncenter textcenter'>
+                <a href='$url?all'>
+                    Whole Programme
+                </a><br>
+                <a href='$url'>
+                    Current Programme
+                </a>
+            </div>
+            
+EOT;
+
+        return $links;
+    }
+    
+    /**
+     * Short description.
+     * 
+     * Long description.
+     * 
+     * @since x.x.x
+     * @access (for functions: only use if private)
+     * 
+     * @see Function/method/class relied on
+     * @link URL
+     * @global type $varname Short description.
+     * 
+     * @param  type $var Description.
+     * @param  type $var Optional. Description.
+     * @return type Description.
+     */
+    private function render_programme_table( $args )
+    {
+        if ( isset( $_GET['term'] ) ) {
+            $this->get_terms( $_GET['term'] );
+        }
+        
+        $start = $this->terms['current']['start'];
+        $end = $this->terms['current']['end'];
+    
+        if ( ! isset( $_GET['all'] ) ) {
+            $args['meta_query'] =array(
+                array(
+                    'key'       => 'start_date',
+                    'value'     => array( $start, $end ),
+                    'type'      => 'numeric',
+                    'compare'   => 'BETWEEN',
+                ),
+            );
+        }
         
         $query = new \WP_Query( $args );
         
-        $output = <<<EOT
+        $output .= <<<EOT
         
             <table class='programme-table'>
                 <thead>
@@ -490,21 +533,13 @@ EOT;
                 <tbody>
                 
 EOT;
-        
+
         while ( $query->have_posts() ):
             $query->the_post();
             $id = get_the_ID();
             $startdate = get_post_meta( $id, 'start_date', true );
             $enddate = get_post_meta( $id, 'end_date', true );
-            if ( date( $this->dateformat, $startdate ) == date( $this->dateformat, $enddate ) ) {
-                $date = date( 'd M', $startdate );
-            } elseif ( date( 'm', $startdate ) == date( 'm', $enddate ) ) {
-                $date = date( 'd', $startdate ) . ' - ' . date( 'd M', $enddate );
-            } elseif ( date( 'y', $startdate ) == date( 'y', $enddate ) ) {
-                $date = date( 'd M', $startdate ) . ' - ' . date( 'd M', $enddate );
-            } else {
-                $date = date( 'd M Y', $startdate ) . ' - ' . date( 'd M Y', $enddate );
-            }
+            $date = $this->render_event_date( $startdate, $enddate );
             $activity = get_the_title();
             $output .= <<<EOD
             
@@ -524,6 +559,37 @@ EOD;
 EOT;
         
         return $output;
+    }
+    
+    /**
+     * Short description.
+     * 
+     * Long description.
+     * 
+     * @since x.x.x
+     * @access (for functions: only use if private)
+     * 
+     * @see Function/method/class relied on
+     * @link URL
+     * @global type $varname Short description.
+     * 
+     * @param  type $var Description.
+     * @param  type $var Optional. Description.
+     * @return type Description.
+     */
+    private function render_event_date( $startdate, $enddate )
+    {
+        if ( date( $this->dateformat, $startdate ) == date( $this->dateformat, $enddate ) ) {
+            $date = date( 'd M', $startdate );
+        } elseif ( date( 'm', $startdate ) == date( 'm', $enddate ) ) {
+            $date = date( 'd', $startdate ) . ' - ' . date( 'd M', $enddate );
+        } elseif ( date( 'y', $startdate ) == date( 'y', $enddate ) ) {
+            $date = date( 'd M', $startdate ) . ' - ' . date( 'd M', $enddate );
+        } else {
+            $date = date( 'd M Y', $startdate ) . ' - ' . date( 'd M Y', $enddate );
+        }
+        
+        return $date;
     }
     
     /**
