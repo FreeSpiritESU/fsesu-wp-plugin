@@ -574,7 +574,7 @@ EOT;
                 array(
                     'label'         => 'Cost',
                     'id'            => 'cost',
-                    'type'          => 'number',
+                    'type'          => 'text',
                     'description'   => 'The cost of the event (if any)',
                     'default'       => 0
                 ),

@@ -363,6 +363,7 @@ abstract class Custom_Post_Type
                 if ( ! isset( $_POST[ $id ] ) ) return $post_id;
                 
                 switch ( $type ) {
+                    case 'datetime':
                     case 'date':
                         update_post_meta( $post_id, $id, strtotime( $_POST[$id] ) );
                         break;
