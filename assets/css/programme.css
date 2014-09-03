@@ -9,7 +9,7 @@
  * @since           0.1.0
  * @version         0.1.0
  * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
- * @lastmodified    29 August 2014
+ * @lastmodified    03 September 2014
  */
 
 .programme .aligncenter {
@@ -22,9 +22,6 @@
     margin: 0 auto;
     width: 75%;
 }
-.programme-table thead th {
-    background: #a00;
-}
 .programme-table tbody th {
     font-weight: normal;
 }
@@ -34,9 +31,60 @@
 .programme-table,
 .programme-table th,
 .programme-table td {
-    border-color: #000;
     text-align: center;
 }
-.programme-table .even {
-    background: #eee;
+
+.programme-details,
+.programme-details th,
+.programme-details td {
+    border: 3px solid #fff;
+}
+.programme-details th {
+    width: 110px;
+}
+.programme-details caption {
+    font-size: 1.1rem;
+    font-weight: bold;
+    padding: 0 11px;
+}
+
+#ajax {
+    display: none;  
+    position: fixed;  
+    _position: absolute; /* hack for internet explorer 6*/  
+    height: 100%;  
+    width: 100%;  
+    top: 0;  
+    left: 0;  
+    background: #000000;  
+    border: 1px solid #cecece;  
+    z-index: 1;
+}
+#ajaxBox {
+    background: #FFFFFF;  
+    border: 4px solid #525252;  
+    display: none;  
+    position: fixed;  
+    _position: absolute; /* hack for internet explorer 6*/  
+    //height: 60%;  
+    width: 50%;  
+    z-index: 2;    
+}
+#ajaxBoxTitle {
+    background-color: #222222;
+    height: 27px; 
+    z-index: 3; 
+}
+#ajaxBoxClose {
+    float: right;
+    padding: 6px 10px 0;
+    text-align: right; 
+    z-index: 4; 
+}
+#ajaxBoxClose img {
+    vertical-align: top;
+}
+#ajaxBoxContents {
+    padding: 12px; 
+    z-index: 3; 
 }

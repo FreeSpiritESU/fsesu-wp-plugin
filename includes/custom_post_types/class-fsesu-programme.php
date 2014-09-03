@@ -119,6 +119,7 @@ class Programme extends Custom_Post_Type
         
         if ( ! is_admin() ) {
             $fsesu->add_style( 'programme', FSESU_URI . 'assets/css/programme.css' );
+            $fsesu->add_script( 'programme', FSESU_URI . 'assets/js/programme.js' );
         } else {
             $fsesu->add_admin_script( 'datepicker', FSESU_URI . 'assets/js/datepicker.js', array( 'jquery-ui-datepicker', 'jquery' ), null, true );
             $fsesu->add_admin_style( 'jquery-ui-style', FSESU_URI . 'assets/css/jquery-ui.css' );
@@ -540,12 +541,14 @@ EOT;
             $startdate = get_post_meta( $id, 'start_date', true );
             $enddate = get_post_meta( $id, 'end_date', true );
             $date = $this->render_event_date( $startdate, $enddate );
-            $activity = get_the_title();
+            $event = get_the_title();
+            $permalink = get_permalink();
+            $data_url = FSESU_URI . 'includes/details.php';
             $output .= <<<EOD
             
                     <tr>
                         <th>$date</th>
-                        <td>$activity</td>
+                        <td><a href='$permalink' data-url='$data_url' data-id='$id' class='event' onclick='return false;'>$event</a></td>
                     </tr>
                 
 EOD;
@@ -577,7 +580,7 @@ EOT;
      * @param  type $var Optional. Description.
      * @return type Description.
      */
-    private function render_event_date( $startdate, $enddate )
+    public function render_event_date( $startdate, $enddate )
     {
         if ( date( $this->dateformat, $startdate ) == date( $this->dateformat, $enddate ) ) {
             $date = date( 'd M', $startdate );
