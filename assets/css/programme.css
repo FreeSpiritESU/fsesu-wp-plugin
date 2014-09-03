@@ -32,6 +32,7 @@
 .programme-table th,
 .programme-table td {
     text-align: center;
+    vertical-align: middle;
 }
 
 .programme-details,

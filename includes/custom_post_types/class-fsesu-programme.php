@@ -15,7 +15,7 @@
  * @since           0.1.0
  * @version         0.1.0
  * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
- * @lastmodified    29 August 2014
+ * @lastmodified    03 September 2014
  */
 
 namespace FSESU;
@@ -64,25 +64,39 @@ class Programme extends Custom_Post_Type
     { 
         global $fsesu;
         
+        /**
+         * Set the default variables relating to this post format.
+         */
         $this->post_type = 'event';
         $this->post_type_plural = 'Events';
         $this->taxonomy = 'programme_type';
         $this->dateformat = get_option('date_format');
         
+        /**
+         * Run the set_defaults function to define the array variables.
+         */
         $this->set_defaults();
         
-        /* Modify some of the default label elements */
+        /**
+         * Modify some of the default label elements.
+         */
         $this->labels['menu_name'] = _x( 'Programme', 'Programme Menu Name', $fsesu->get_domain() );
         $this->labels['search_items'] = __( 'Search Programme', $fsesu->get_domain() );
         
-        /* Redefine the labels argument since we made some changes */
+        /**
+         * Redefine the labels argument since we made some changes. 
+         */
         $this->arguments['labels'] = $this->labels;
         
-        /* Modify some of the default post type arguments */
+        /**
+         * Modify some of the default post type arguments. 
+         */
         $this->arguments['menu_icon'] = 'dashicons-calendar';
         $this->arguments['rewrite'] = array( 'slug' => "unitinfo/programme", 'with_front' => false );
         
-        /* Modify some of the default taxonomy arguments */
+        /**
+         * Modify some of the default taxonomy arguments. 
+         */
         $this->tax_arguments['rewrite'] = array( 'slug' => "unitinfo/programme/category", 'with_front' => false );
         $this->tax_arguments['hierarchical'] = true;
         
@@ -115,8 +129,23 @@ class Programme extends Custom_Post_Type
          * what the next term will be.
          */
         $this->get_terms( strtotime( date( $this->dateformat ) ) );
+        
+        /**
+         * Add a shortcode for displaying various types of programme lists.
+         */
         add_shortcode( 'programme', array( $this, 'render_programme' ) );
         
+        /**
+         * Add the ability to include shortcodes in text widgets.
+         * 
+         * This filter has been included to allow the use of the 'programme'
+         * shortcode to generate a list of upcoming events in the sidebar.
+         */
+        add_filter('widget_text', 'do_shortcode');
+        
+        /**
+         * Define the style and scripts needed by the Event CPT
+         */
         if ( ! is_admin() ) {
             $fsesu->add_style( 'programme', FSESU_URI . 'assets/css/programme.css' );
             $fsesu->add_script( 'programme', FSESU_URI . 'assets/js/programme.js' );
@@ -302,6 +331,11 @@ class Programme extends Custom_Post_Type
         }
     }
     
+    
+    
+    
+    
+    
     /**
      * Short description.
      * 
@@ -323,15 +357,11 @@ class Programme extends Custom_Post_Type
         extract( shortcode_atts(
             array(
                 'number'    => -1,
-                'type'      => 'table',
-                'links'     => true,
+                'type'      => 'table'
             ), $atts )
         );
         
         $programme = '<div class="programme">';
-        if ( $links == true ) {
-            $programme .= $this->render_programme_links();
-        }
         
         $args = array( 
             'posts_per_page'    => $number,
@@ -343,10 +373,11 @@ class Programme extends Custom_Post_Type
         
         switch ( $type ) {
             case 'upcoming':
-                
+                $programme .= $this->render_programme_upcoming( $args );
                 break;
             case 'table':
             default:
+                $programme .= $this->render_programme_links();
                 $programme .= $this->render_programme_table( $args );
                 break;
         }
@@ -356,9 +387,268 @@ class Programme extends Custom_Post_Type
         return $programme;
     }
     
+    /**
+     * Short description.
+     * 
+     * Long description.
+     * 
+     * @since x.x.x
+     * @access (for functions: only use if private)
+     * 
+     * @see Function/method/class relied on
+     * @link URL
+     * @global type $varname Short description.
+     * 
+     * @param  type $var Description.
+     * @param  type $var Optional. Description.
+     * @return type Description.
+     */
+    private function render_programme_table( $args )
+    {
+        if ( isset( $_GET['term'] ) ) {
+            $this->get_terms( $_GET['term'] );
+        }
+        
+        $start = $this->terms['current']['start'];
+        $end = $this->terms['current']['end'];
+    
+        if ( ! isset( $_GET['all'] ) ) {
+            $args['meta_query'] =array(
+                array(
+                    'key'       => 'start_date',
+                    'value'     => array( $start, $end ),
+                    'type'      => 'numeric',
+                    'compare'   => 'BETWEEN',
+                ),
+            );
+        }
+        
+        $events = $this->get_programme( $args );
+        $data_url = FSESU_URI . 'includes/details.php';
+        
+        $output .= <<<EOT
+        
+            <table class='programme-table'>
+                <thead>
+                    <th class='date'>Date</th>
+                    <th class='activity'>Activity</th>
+                </thead>
+                <tbody>
+                
+EOT;
+
+        foreach ( $events as $event ) {
+            $output .= <<<EOD
+            
+                    <tr>
+                        <th>{$event['date']}</th>
+                        <td><a href='{$event['permalink']}' data-url='{$event['data_url']}' data-id='{$event['id']}' class='event' onclick='return false;'>{$event['title']}</a></td>
+                    </tr>
+                
+EOD;
+        }
+        
+        $output .= <<<EOT
+        
+                </tbody>
+            </table>
+EOT;
+        
+        return $output;
+    }
+    
+    /**
+     * Short description.
+     * 
+     * Long description.
+     * 
+     * @since x.x.x
+     * @access (for functions: only use if private)
+     * 
+     * @see Function/method/class relied on
+     * @link URL
+     * @global type $varname Short description.
+     * 
+     * @param  type $var Description.
+     * @param  type $var Optional. Description.
+     * @return type Description.
+     */
+    private function render_programme_upcoming( $args )
+    {
+        $args['meta_query'] =array(
+            array(
+                'key'       => 'end_date',
+                'value'     => strtotime( 'today' ),
+                'type'      => 'numeric',
+                'compare'   => '>=',
+            ),
+        );
+        
+        $events = $this->get_programme( $args );
+        $data_url = FSESU_URI . 'includes/details.php';
+        
+        $output = '<dl class="programme-upcoming"><dt></dt><dd></dd>';
+        
+        foreach( $events as $event ) {
+            $output .= <<<EOD
+            
+                    <dt>{$event['date']}</dt>
+                    <dd>
+                        Event: <a href='{$event['permalink']}' data-url='{$event['data_url']}' data-id='{$event['id']}' class='event' onclick='return false;'>{$event['title']}</a><br>
+                        Where: {$event['location']}<br>
+                        Price: {$event['cost']}
+                    </dd>
+                
+EOD;
+        }
+        
+        $output .= '</dl>';
+        
+        return $output;
+    }
+    
+    /**
+     * Short description.
+     * 
+     * Long description.
+     * 
+     * @since x.x.x
+     * @access (for functions: only use if private)
+     * 
+     * @see Function/method/class relied on
+     * @link URL
+     * @global type $varname Short description.
+     * 
+     * @param  type $var Description.
+     * @param  type $var Optional. Description.
+     * @return type Description.
+     */
+    private function render_event_date( $startdate, $enddate )
+    {
+        if ( date( $this->dateformat, $startdate ) == date( $this->dateformat, $enddate ) ) {
+            $date = date( 'd F', $startdate );
+        } elseif ( date( 'm', $startdate ) == date( 'm', $enddate ) ) {
+            $date = date( 'd', $startdate ) . ' - ' . date( 'd F', $enddate );
+        } elseif ( date( 'y', $startdate ) == date( 'y', $enddate ) ) {
+            $date = date( 'd M', $startdate ) . ' - ' . date( 'd M', $enddate );
+        } else {
+            $date = date( 'd M Y', $startdate ) . ' - ' . date( 'd M Y', $enddate );
+        }
+        
+        return $date;
+    }
+    
+    /**
+     * Short description.
+     * 
+     * Long description.
+     * 
+     * @since x.x.x
+     * @access (for functions: only use if private)
+     * 
+     * @see Function/method/class relied on
+     * @link URL
+     * @global type $varname Short description.
+     * 
+     * @param  type $var Description.
+     * @param  type $var Optional. Description.
+     * @return type Description.
+     */
+    private function render_programme_links( )
+    {
+        $url = get_page_link();
+        
+        $links = <<<EOT
+        
+            <div class='alignleft'>
+                <a href='$url?term={$this->terms['previous']['start']}'>
+                    <i class='fa fa-chevron-left'></i> Previous Term
+                </a>
+            </div>
+            <div class='alignright textright'>
+                <a href='$url?term={$this->terms['next']['start']}'>
+                    Next Term <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+            <div class='aligncenter textcenter'>
+                <a href='$url?all'>
+                    Whole Programme
+                </a><br>
+                <a href='$url'>
+                    Current Programme
+                </a>
+            </div>
+            
+EOT;
+
+        return $links;
+    }
     
     
     
+    
+    
+    /**
+     * Short description.
+     * 
+     * Long description.
+     * 
+     * @since x.x.x
+     * @access (for functions: only use if private)
+     * 
+     * @see Function/method/class relied on
+     * @link URL
+     * @global type $varname Short description.
+     * 
+     * @param  type $var Description.
+     * @param  type $var Optional. Description.
+     * @return type Description.
+     */
+    private function get_programme( $args )
+    {
+        $query = new \WP_Query( $args );
+        
+        while ( $query->have_posts() ) {
+            $query->the_post();
+            
+            $id             = get_the_ID();
+            $title          = get_the_title();
+            $startdate      = get_post_meta( $id, 'start_date', true );
+            $enddate        = get_post_meta( $id, 'end_date', true );
+            $date           = $this->render_event_date( $startdate, $enddate );
+            $description    = get_the_content();
+            $location       = '';
+            $cost           = get_post_meta( $id, 'cost', true );
+            $link           = get_post_meta( $id, 'link', true );
+            $permalink      = get_permalink();
+            
+            $locations = get_the_terms( $post->ID, 'location' );
+            
+            if ( $locations && ! is_wp_error( $locations ) ) { 
+            	$location_list = array();
+            	foreach ( $locations as $location ) {
+            		$location_list[] = $location->name;
+            	}
+            	$location = join( ', ', $location_list );
+            }
+            
+            $programme[] = array( 
+                'id'            => $id,
+                'title'         => $title,
+                'startdate'     => $startdate,
+                'enddate'       => $enddate,
+                'date'          => $date,
+                'description'   => $description,
+                'location'      => $location,
+                'cost'          => $cost,
+                'link'          => $link,
+                'permalink'     => $permalink
+            );
+        }
+        wp_reset_postdata();
+        
+        return $programme;
+    }
     
     /**
      * Short description.
@@ -440,160 +730,9 @@ class Programme extends Custom_Post_Type
         }
     }
     
-    /**
-     * Short description.
-     * 
-     * Long description.
-     * 
-     * @since x.x.x
-     * @access (for functions: only use if private)
-     * 
-     * @see Function/method/class relied on
-     * @link URL
-     * @global type $varname Short description.
-     * 
-     * @param  type $var Description.
-     * @param  type $var Optional. Description.
-     * @return type Description.
-     */
-    private function render_programme_links( )
-    {
-        $url = get_page_link();
-        
-        $links = <<<EOT
-        
-            <div class='alignleft'>
-                <a href='$url?term={$this->terms['previous']['start']}'>
-                    <i class='fa fa-chevron-left'></i> Previous Term
-                </a>
-            </div>
-            <div class='alignright textright'>
-                <a href='$url?term={$this->terms['next']['start']}'>
-                    Next Term <i class="fa fa-chevron-right"></i>
-                </a>
-            </div>
-            <div class='aligncenter textcenter'>
-                <a href='$url?all'>
-                    Whole Programme
-                </a><br>
-                <a href='$url'>
-                    Current Programme
-                </a>
-            </div>
-            
-EOT;
-
-        return $links;
-    }
     
-    /**
-     * Short description.
-     * 
-     * Long description.
-     * 
-     * @since x.x.x
-     * @access (for functions: only use if private)
-     * 
-     * @see Function/method/class relied on
-     * @link URL
-     * @global type $varname Short description.
-     * 
-     * @param  type $var Description.
-     * @param  type $var Optional. Description.
-     * @return type Description.
-     */
-    private function render_programme_table( $args )
-    {
-        if ( isset( $_GET['term'] ) ) {
-            $this->get_terms( $_GET['term'] );
-        }
-        
-        $start = $this->terms['current']['start'];
-        $end = $this->terms['current']['end'];
     
-        if ( ! isset( $_GET['all'] ) ) {
-            $args['meta_query'] =array(
-                array(
-                    'key'       => 'start_date',
-                    'value'     => array( $start, $end ),
-                    'type'      => 'numeric',
-                    'compare'   => 'BETWEEN',
-                ),
-            );
-        }
-        
-        $query = new \WP_Query( $args );
-        
-        $output .= <<<EOT
-        
-            <table class='programme-table'>
-                <thead>
-                    <th class='date'>Date</th>
-                    <th class='activity'>Activity</th>
-                </thead>
-                <tbody>
-                
-EOT;
-
-        while ( $query->have_posts() ):
-            $query->the_post();
-            $id = get_the_ID();
-            $startdate = get_post_meta( $id, 'start_date', true );
-            $enddate = get_post_meta( $id, 'end_date', true );
-            $date = $this->render_event_date( $startdate, $enddate );
-            $event = get_the_title();
-            $permalink = get_permalink();
-            $data_url = FSESU_URI . 'includes/details.php';
-            $output .= <<<EOD
-            
-                    <tr>
-                        <th>$date</th>
-                        <td><a href='$permalink' data-url='$data_url' data-id='$id' class='event' onclick='return false;'>$event</a></td>
-                    </tr>
-                
-EOD;
-        endwhile;
-        wp_reset_postdata();
-        
-        $output .= <<<EOT
-        
-                </tbody>
-            </table>
-EOT;
-        
-        return $output;
-    }
     
-    /**
-     * Short description.
-     * 
-     * Long description.
-     * 
-     * @since x.x.x
-     * @access (for functions: only use if private)
-     * 
-     * @see Function/method/class relied on
-     * @link URL
-     * @global type $varname Short description.
-     * 
-     * @param  type $var Description.
-     * @param  type $var Optional. Description.
-     * @return type Description.
-     */
-    public function render_event_date( $startdate, $enddate )
-    {
-        if ( date( $this->dateformat, $startdate ) == date( $this->dateformat, $enddate ) ) {
-            $date = date( 'd M', $startdate );
-        } elseif ( date( 'm', $startdate ) == date( 'm', $enddate ) ) {
-            $date = date( 'd', $startdate ) . ' - ' . date( 'd M', $enddate );
-        } elseif ( date( 'y', $startdate ) == date( 'y', $enddate ) ) {
-            $date = date( 'd M', $startdate ) . ' - ' . date( 'd M', $enddate );
-        } else {
-            $date = date( 'd M Y', $startdate ) . ' - ' . date( 'd M Y', $enddate );
-        }
-        
-        return $date;
-    }
     
     /**
      * Define the custom fields to be used by the Event post type.
