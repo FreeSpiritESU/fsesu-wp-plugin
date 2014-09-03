@@ -19,7 +19,15 @@ jQuery(document).ready(function($) {
             hidePopup();
         });
 
+        $('#ajaxBox').click(function() {
+            hidePopup();
+        });
+
         $('#ajaxBoxClose').click(function() {
+            hidePopup();
+        });
+
+        $('#ajaxBoxTitle').click(function() {
             hidePopup();
         });
     });

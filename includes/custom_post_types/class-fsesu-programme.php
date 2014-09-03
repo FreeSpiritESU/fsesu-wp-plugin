@@ -372,6 +372,9 @@ class Programme extends Custom_Post_Type
         );
         
         switch ( $type ) {
+            case 'planner':
+                $programme .= $this->render_programme_planner( $args );
+                break;
             case 'upcoming':
                 $programme .= $this->render_programme_upcoming( $args );
                 break;
@@ -523,6 +526,143 @@ EOD;
      * @param  type $var Optional. Description.
      * @return type Description.
      */
+    private function render_programme_planner( $args )
+    {
+        $year = ( isset( $_GET['y'] ) ) ? $_GET['y'] : date( 'Y' );
+
+        $month['1']     = 'Jan';
+        $month['2']     = 'Feb';
+        $month['3']     = 'Mar';
+        $month['4']     = 'Apr';
+        $month['5']     = 'May';
+        $month['6']     = 'Jun';
+        $month['7']     = 'Jul';
+        $month['8']     = 'Aug';
+        $month['9']     = 'Sep';
+        $month['10']    = 'Oct';
+        $month['11']    = 'Nov';
+        $month['12']    = 'Dec';
+        
+        $next = $year + 1;
+        $prev = $year - 1;
+        $url = get_page_link();
+        
+        $calendar = <<<EOT
+        
+                <table class='planner'>
+                    <thead>
+                        <th>&nbsp;</th>
+                        <th>m</th><th>t</th><th>w</th><th>t</th><th>f</th><th>s</th><th>s</th>
+                        <th>m</th><th>t</th><th>w</th><th>t</th><th>f</th><th>s</th><th>s</th>
+                        <th>m</th><th>t</th><th>w</th><th>t</th><th>f</th><th>s</th><th>s</th>
+                        <th>m</th><th>t</th><th>w</th><th>t</th><th>f</th><th>s</th><th>s</th>
+                        <th>m</th><th>t</th><th>w</th><th>t</th><th>f</th><th>s</th><th>s</th>
+                        <th>m</th><th>t</th>
+                    </thead>
+                
+EOT;
+        
+        foreach ( $month as $nr => $name ) {
+            if ( $nr &1 ) {
+                $calendar .= "
+                    <tr>";
+            } else {
+                $calendar .= "
+                    <tr class='even'>";
+            } 
+            $calendar .= "<th class='month'>$name</th>";
+        
+            $days_in_month = cal_days_in_month( CAL_GREGORIAN, $nr, $year );
+            $first_day = date('w', mktime( 0, 0, 0, $nr, 1, $year )); 
+            $first_day = ( $first_day == 0 ) ? 7 : $first_day; 
+            
+            $days = $first_day + $days_in_month;
+            $counter = 1;
+            
+            for ( $i = 1; $i < 38; $i++ ) {
+                $counter++;
+                $date[$i] = $counter;
+                $date[$i] -= $first_day;
+                $class = '';
+                $classes = array();
+                if ( $date[$i] < 1 || $date[$i] > $days_in_month ) {
+                    $calendar .= '<td>&nbsp;</td>';
+                } else { 
+                    $calendar .= $this->get_event( $args, $year, $nr, $date[$i] );
+                }
+            } 
+            
+            $calendar .= "
+                    </tr>";
+        } 
+        
+        $calendar .=  "</table>";
+    
+        if ($year != '2008') {
+            $calendar .=  <<<EOT
+            <div class='alignleft'>
+                <a href='$url?y=$prev' title='Previous Year'>
+                    <i class='fa fa-chevron-left'></i> Previous Year
+                </a>
+            </div>
+            <div class='alignright textright'>
+                <a href='$url?y=$next' title='Next Year'>
+                    Next Year <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+            <div class='aligncenter textcenter'>
+                <a href='$url' title='This Year'>
+                    This Year
+                </a>
+            </div>
+
+EOT;
+        } else {
+            $calendar .= <<<EOT
+            <div class='alignright textright'>
+                <a href='$url?y=$next' title='Next Year'>
+                    Next Year <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+            <div class='aligncenter textcenter'>
+                <a href='$url' title='This Year'>
+                    This Year
+                </a>
+            </div>
+
+EOT;
+        }
+        
+        $calendar .= "<ul class='event_types'>";
+    
+        $types = get_terms( 'programme_type' );
+        if ( !empty( $types ) && !is_wp_error( $types ) ) {
+            foreach ( $types as $type ) {
+                $calendar .=  "<li class='{$type->slug}'>{$type->name}</li>";
+            }
+        }
+    
+        $calendar .= "</ul>";
+        
+        return $calendar;
+    }
+    
+    /**
+     * Short description.
+     * 
+     * Long description.
+     * 
+     * @since x.x.x
+     * @access (for functions: only use if private)
+     * 
+     * @see Function/method/class relied on
+     * @link URL
+     * @global type $varname Short description.
+     * 
+     * @param  type $var Description.
+     * @param  type $var Optional. Description.
+     * @return type Description.
+     */
     private function render_event_date( $startdate, $enddate )
     {
         if ( date( $this->dateformat, $startdate ) == date( $this->dateformat, $enddate ) ) {
@@ -621,6 +761,7 @@ EOT;
             $cost           = get_post_meta( $id, 'cost', true );
             $link           = get_post_meta( $id, 'link', true );
             $permalink      = get_permalink();
+            $category       = '';
             
             $locations = get_the_terms( $post->ID, 'location' );
             
@@ -630,6 +771,16 @@ EOT;
             		$location_list[] = $location->name;
             	}
             	$location = join( ', ', $location_list );
+            }
+            
+            $categories = get_the_terms( $post->ID, 'programme_type' );
+            
+            if ( $categories && ! is_wp_error( $categories ) ) { 
+            	$category_list = array();
+            	foreach ( $categories as $category ) {
+            		$category_list[] = $category->name;
+            	}
+            	$category = join( ', ', $category_list );
             }
             
             $programme[] = array( 
@@ -642,12 +793,71 @@ EOT;
                 'location'      => $location,
                 'cost'          => $cost,
                 'link'          => $link,
-                'permalink'     => $permalink
+                'permalink'     => $permalink,
+                'category'      => $category
             );
         }
         wp_reset_postdata();
         
         return $programme;
+    }
+    
+    /**
+     * Short description.
+     * 
+     * Long description.
+     * 
+     * @since x.x.x
+     * @access (for functions: only use if private)
+     * 
+     * @see Function/method/class relied on
+     * @link URL
+     * @global type $varname Short description.
+     * 
+     * @param  type $var Description.
+     * @param  type $var Optional. Description.
+     * @return type Description.
+     */
+    private function get_event( $args, $y, $m, $d )
+    {
+        $args['meta_query'] =array(
+            array(
+                'key'       => 'start_date',
+                'value'     => mktime( 0, 0, 0, $m, $d + 1, $y ),
+                'type'      => 'numeric',
+                'compare'   => '<=',
+            ),
+            array(
+                'key'       => 'end_date',
+                'value'     => mktime( 0, 0, 0, $m, $d, $y ),
+                'type'      => 'numeric',
+                'compare'   => '>=',
+            )
+        );
+        
+        $events = $this->get_programme( $args );
+        $data_url = FSESU_URI . 'includes/details.php';
+        
+        $day = mktime( 0, 0, 0, $m, $d, $y );
+        if ( date( 'N', $day ) > 5 ) {
+            $classes[] = 'weekend';
+        }
+        if ( $events[0] ) {
+            $classes[] = 'event';
+            $cell = "<a href='{$events[0]['permalink']}' data-url='$data_url' data-id='{$events[0]['id']}' onclick='return false;'>$d</a>";
+        } else {
+            $cell = $d;
+        }
+        if ( $events[0]['category'] ) {
+            $classes[] = strtolower( str_replace( ' ', '_', $events[0]['category'] ) );
+        }
+        if ( ! empty( $classes ) ) {
+            $class = ' class="' . join( ' ', $classes ) . '"';
+        }
+        
+        $event = "<td$class>$cell</td>";
+        
+        return $event;
     }
     
     /**

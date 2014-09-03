@@ -49,6 +49,94 @@
     padding: 0 11px;
 }
 
+
+
+.programme .planner {
+    max-width: 100%;
+}
+
+.programme .planner,
+.programme .planner td,
+.programme .planner th {
+    border: none;
+    font-size: 13px;
+    padding: 0;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.programme .planner a {
+    border: none !important;
+    color: #00f !important;
+}
+
+.programme .planner tr {
+    height: 25px;
+}
+
+.programme .planner tr th {
+    width: 40px;
+}
+
+.programme .planner td {
+    width: 20px;
+}
+
+.programme .planner .weekend {
+    background-color: #cacaca;
+}
+
+.programme .planner .event,
+.programme .planner .event.other,
+.programme .event_types .other {
+    background-color: #ca8;
+}
+
+.programme .event_types .monday_night,
+.programme .planner .event.monday_night {
+    background-color: #88c;
+}
+
+.programme .event_types .indoors,
+.programme .planner .event.indoors {
+    background-color: #ac8;
+}
+
+.programme .event_types .outdoors,
+.programme .planner .event.outdoors {
+    background-color: #a8c;
+}
+
+.programme .event_types .camp,
+.programme .planner .event.camp {
+    background-color: #8c8;
+}
+
+.programme .event_types .climbing,
+.programme .planner .event.climbing {
+    background-color: #c8c;
+}
+
+.programme .event_types .hike,
+.programme .planner .event.hike {
+    background-color: #c88;
+}
+
+.programme .event_types .international,
+.programme .planner .event.international {
+    background-color: #8cc;
+}
+
+.programme .event_types .jamboree,
+.programme .planner .event.jamboree {
+    background-color: #cc8;
+}
+
+.programme .event_types {
+    list-style: none;
+}
+
+
 #ajax {
     display: none;  
     position: fixed;  
