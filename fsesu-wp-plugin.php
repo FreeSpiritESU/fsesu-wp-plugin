@@ -8,7 +8,7 @@
  * License:           GPL2+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       fsesu
- * GitHub Theme URI:  richardp2/fsesu-theme
+ * GitHub Theme URI:  FreeSpiritESU/fsesu-wp-plugin
  * GitHub Branch:     develop
  * 
  * 
