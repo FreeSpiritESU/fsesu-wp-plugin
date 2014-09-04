@@ -550,6 +550,7 @@ EOD;
         $calendar = <<<EOT
         
                 <table class='planner'>
+                    <caption>$year</caption>
                     <thead>
                         <th>&nbsp;</th>
                         <th>m</th><th>t</th><th>w</th><th>t</th><th>f</th><th>s</th><th>s</th>
@@ -825,7 +826,7 @@ EOT;
                 'key'       => 'start_date',
                 'value'     => mktime( 0, 0, 0, $m, $d + 1, $y ),
                 'type'      => 'numeric',
-                'compare'   => '<=',
+                'compare'   => '<',
             ),
             array(
                 'key'       => 'end_date',
@@ -843,13 +844,13 @@ EOT;
             $classes[] = 'weekend';
         }
         if ( $events[0] ) {
-            $classes[] = 'event';
-            $cell = "<a href='{$events[0]['permalink']}' data-url='$data_url' data-id='{$events[0]['id']}' onclick='return false;'>$d</a>";
+            $classes[] = 'activity';
+            $cell = "<a href='{$events[0]['permalink']}' data-start='{$events[0]['startdate']}' data-url='$data_url' data-id='{$events[0]['id']}' class='event' onclick='return false;'>$d</a>";
         } else {
             $cell = $d;
         }
         if ( $events[0]['category'] ) {
-            $classes[] = strtolower( str_replace( ' ', '_', $events[0]['category'] ) );
+            $classes[] = strtolower( str_replace( ',_', ' ', str_replace( ' ', '_', trim( $events[0]['category'] ) ) ) );
         }
         if ( ! empty( $classes ) ) {
             $class = ' class="' . join( ' ', $classes ) . '"';

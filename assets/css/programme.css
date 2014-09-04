@@ -67,7 +67,7 @@
 
 .programme .planner a {
     border: none !important;
-    color: #00f !important;
+    color: #00f;
 }
 
 .programme .planner tr {
@@ -86,54 +86,78 @@
     background-color: #cacaca;
 }
 
-.programme .planner .event,
-.programme .planner .event.other,
+.programme .planner .activity,
+.programme .planner .other,
 .programme .event_types .other {
-    background-color: #ca8;
-}
-
-.programme .event_types .monday_night,
-.programme .planner .event.monday_night {
-    background-color: #88c;
+    background-color: #c80;
 }
 
 .programme .event_types .indoors,
-.programme .planner .event.indoors {
-    background-color: #ac8;
+.programme .planner .indoors {
+    background-color: #5f5;
 }
 
 .programme .event_types .outdoors,
-.programme .planner .event.outdoors {
-    background-color: #a8c;
+.programme .planner .outdoors {
+    background-color: #8cf;
+}
+
+.programme .event_types .monday_night,
+.programme .planner .monday_night {
+    background-color: #fc0;
 }
 
 .programme .event_types .camp,
-.programme .planner .event.camp {
-    background-color: #8c8;
+.programme .planner .camp {
+    background-color: #0a0;
 }
 
 .programme .event_types .climbing,
-.programme .planner .event.climbing {
-    background-color: #c8c;
+.programme .planner .climbing {
+    background-color: #a00;
 }
 
 .programme .event_types .hike,
-.programme .planner .event.hike {
-    background-color: #c88;
+.programme .planner .hike {
+    background-color: #00a;
 }
 
 .programme .event_types .international,
-.programme .planner .event.international {
-    background-color: #8cc;
+.programme .planner .international {
+    background-color: #0aa;
 }
 
 .programme .event_types .jamboree,
-.programme .planner .event.jamboree {
-    background-color: #cc8;
+.programme .planner .jamboree {
+    background-color: #a0a;
+}
+
+.programme .planner .non-explorer_activity,
+.programme .event_types .non-explorer_activity {
+    background-color: #fdd;
+}
+
+.programme .planner caption {
+    font-size: 16px;
+    font-weight: bold;
+    padding: 5px 0;
+    text-align: center;
 }
 
 .programme .event_types {
     list-style: none;
+}
+
+.programme .event_types li {
+    padding: 1px 5px;
+}
+
+.programme .event_types .climbing,
+.programme .planner .climbing a,
+.programme .event_types .hike,
+.programme .planner .hike a {
+    color: #fff !important;
+    
 }
 
 
