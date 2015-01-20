@@ -10,12 +10,12 @@
  * @package         Wordpress\Plugins\FreeSpiritESU
  * @subpackage      Classes
  * @author          Richard Perry <http://www.perry-online.me.uk/>
- * @copyright       Copyright (c) 2014 FreeSpirit ESU
+ * @copyright       Copyright (c) 2015 FreeSpirit ESU
  * @license         http://www.gnu.org/licenses/gpl-2.0.html
  * @since           0.1.0
  * @version         0.1.0
  * @modifiedby      Richard Perry <richard@freespiritesu.org.uk>
- * @lastmodified    03 September 2014
+ * @lastmodified    20 January 2015
  */
 
 namespace FSESU;
@@ -216,9 +216,12 @@ class Programme extends Custom_Post_Type
     {
         global $fsesu, $post;
         
+        // Get the meta data based on the post ID
         $meta = get_post_meta( $post->ID );
         
+        // Define the output for each column type
         switch( $column ) {
+            
             case 'event_date':
                 // Get the dates and time data
                 $date_format = get_option('date_format');
@@ -237,6 +240,7 @@ class Programme extends Custom_Post_Type
                     echo $start . ' ' . $starttime . ' - <br />' . $end . ' ' . $endtime;
                 }
                 break;
+                
             case 'location':
                 // Get the location
                 $locations = get_the_terms( $post->ID, 'location' );
@@ -252,14 +256,16 @@ class Programme extends Custom_Post_Type
                     echo '';
                 }
                 break;
+                
             case 'cost':
                 // Get the cost for the event
                 if ( is_numeric( $meta['cost'][0] ) ) {
                     echo '&pound;' . $meta['cost'][0];
                 } else {
-                    echo '';
+                    echo $meta['cost'][0];
                 }
                 break;
+                
             case 'type':
                 // Get the list of categories
                 $event_types = get_the_terms( $post->ID, 'programme_type' );
@@ -337,23 +343,20 @@ class Programme extends Custom_Post_Type
     
     
     /**
-     * Short description.
+     * Shortcode function for displaying the programme.
      * 
-     * Long description.
+     * This function is registered as a shortcode callback and renders a version
+     * of the programme based on the arguments supplied to the shortcode. Each
+     * different type of rendering has it's own function linked from this one.
      * 
-     * @since x.x.x
-     * @access (for functions: only use if private)
+     * @since 0.1.0
      * 
-     * @see Function/method/class relied on
-     * @link URL
-     * @global type $varname Short description.
-     * 
-     * @param  type $var Description.
-     * @param  type $var Optional. Description.
-     * @return type Description.
+     * @param  array  $atts      Attributes defined by the shortcode.
+     * @return string $programme The output to display to the user.
      */
     public function render_programme( $atts )
     {
+        // Extract the shortcode attributes whilst defining the defaults
         extract( shortcode_atts(
             array(
                 'number'    => -1,
@@ -363,6 +366,7 @@ class Programme extends Custom_Post_Type
         
         $programme = '<div class="programme">';
         
+        // Define the default arguments for the WP_Query call
         $args = array( 
             'posts_per_page'    => $number,
             'post_type'         => 'event',
@@ -371,6 +375,7 @@ class Programme extends Custom_Post_Type
             'order'             => 'ASC'
         );
         
+        // Call the specific render function dependant on the type required
         switch ( $type ) {
             case 'planner':
                 $programme .= $this->render_programme_planner( $args );
@@ -391,30 +396,33 @@ class Programme extends Custom_Post_Type
     }
     
     /**
-     * Short description.
+     * Generate the HTML to display the programme table.
      * 
-     * Long description.
+     * Check if a specific term, or all events, has been specified, then generate
+     * a table based on those criteria containing all the relevant events.
      * 
-     * @since x.x.x
-     * @access (for functions: only use if private)
+     * @since  0.1.0
+     * @access private
      * 
-     * @see Function/method/class relied on
-     * @link URL
-     * @global type $varname Short description.
+     * @see    render_programme
      * 
-     * @param  type $var Description.
-     * @param  type $var Optional. Description.
-     * @return type Description.
+     * @param  array   $args    Argument for the WP_Query call.
+     * @return string  $output  HTML for display to the end user.
      */
     private function render_programme_table( $args )
     {
+        // Has a specific term been set? If so, redefine the class $terms array
         if ( isset( $_GET['fsterm'] ) ) {
             $this->get_terms( $_GET['fsterm'] );
         }
         
+        // Set the start and end dates for the query based on the class $terms
+        // array
         $start = $this->terms['current']['start'];
         $end = $this->terms['current']['end'];
     
+        // If 'all' is not defined, adjust the query arguments with the start
+        // and end dates defined previously
         if ( ! isset( $_GET['all'] ) ) {
             $args['meta_query'] =array(
                 array(
@@ -426,6 +434,7 @@ class Programme extends Custom_Post_Type
             );
         }
         
+        // Get the event data and generate the output
         $events = $this->get_programme( $args );
         $data_url = FSESU_URI . 'includes/details.php';
         
@@ -439,6 +448,9 @@ class Programme extends Custom_Post_Type
                 <tbody>
             
 EOT;
+
+        // If there are events, loop through them to create the table rows,
+        // otherwise, display a message
         if ( $events ) {
             foreach ( $events as $event ) {
                 $output .= <<<EOD
@@ -473,16 +485,13 @@ EOT;
      * 
      * Long description.
      * 
-     * @since x.x.x
-     * @access (for functions: only use if private)
+     * @since  0.1.0
+     * @access private
      * 
-     * @see Function/method/class relied on
-     * @link URL
-     * @global type $varname Short description.
+     * @see    render_programme
      * 
-     * @param  type $var Description.
-     * @param  type $var Optional. Description.
-     * @return type Description.
+     * @param  array   $args    Argument for the WP_Query call.
+     * @return string  $output  HTML for display to the end user.
      */
     private function render_programme_upcoming( $args )
     {
@@ -530,16 +539,13 @@ EOD;
      * 
      * Long description.
      * 
-     * @since x.x.x
-     * @access (for functions: only use if private)
+     * @since  0.1.0
+     * @access private
      * 
-     * @see Function/method/class relied on
-     * @link URL
-     * @global type $varname Short description.
+     * @see    render_programme
      * 
-     * @param  type $var Description.
-     * @param  type $var Optional. Description.
-     * @return type Description.
+     * @param  array   $args    Argument for the WP_Query call.
+     * @return string  $output  HTML for display to the end user.
      */
     private function render_programme_planner( $args )
     {
@@ -877,6 +883,8 @@ EOT;
         }
         if ( ! empty( $classes ) ) {
             $class = ' class="' . join( ' ', $classes ) . '"';
+        } else {
+            $class = '';
         }
         
         $event = "<td$class>$cell</td>";
