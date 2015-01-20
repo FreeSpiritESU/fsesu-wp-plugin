@@ -408,8 +408,8 @@ class Programme extends Custom_Post_Type
      */
     private function render_programme_table( $args )
     {
-        if ( isset( $_GET['term'] ) ) {
-            $this->get_terms( $_GET['term'] );
+        if ( isset( $_GET['fsterm'] ) ) {
+            $this->get_terms( $_GET['fsterm'] );
         }
         
         $start = $this->terms['current']['start'];
@@ -421,7 +421,7 @@ class Programme extends Custom_Post_Type
                     'key'       => 'start_date',
                     'value'     => array( $start, $end ),
                     'type'      => 'numeric',
-                    'compare'   => 'BETWEEN',
+                    'compare'   => 'BETWEEN'
                 ),
             );
         }
@@ -429,30 +429,38 @@ class Programme extends Custom_Post_Type
         $events = $this->get_programme( $args );
         $data_url = FSESU_URI . 'includes/details.php';
         
-        $output .= <<<EOT
-        
+        $output = <<<EOT
+    
             <table class='programme-table'>
                 <thead>
                     <th class='date'>Date</th>
                     <th class='activity'>Activity</th>
                 </thead>
                 <tbody>
-                
-EOT;
-
-        foreach ( $events as $event ) {
-            $output .= <<<EOD
             
+EOT;
+        if ( $events ) {
+            foreach ( $events as $event ) {
+                $output .= <<<EOD
+                
                     <tr>
                         <th>{$event['date']}</th>
-                        <td><a href='{$event['permalink']}' data-url='{$event['data_url']}' data-id='{$event['id']}' class='event' onclick='return false;'>{$event['title']}</a></td>
+                        <td><a href='{$event['permalink']}' data-url='{$data_url}' data-id='{$event['id']}' class='event' onclick='return false;'>{$event['title']}</a></td>
                     </tr>
-                
+                    
+EOD;
+            }
+        } else {
+            $output .= <<<EOD
+
+                    <tr>
+                        <td colspan='2'>No events to display</td>
+                    </tr>
 EOD;
         }
         
         $output .= <<<EOT
-        
+    
                 </tbody>
             </table>
 EOT;
@@ -492,16 +500,23 @@ EOT;
         
         $output = '<dl class="programme-upcoming"><dt></dt><dd></dd>';
         
-        foreach( $events as $event ) {
-            $output .= <<<EOD
+        if ( $events ) {
+            foreach( $events as $event ) {
+                $output .= <<<EOD
             
                     <dt>{$event['date']}</dt>
                     <dd>
-                        Event: <a href='{$event['permalink']}' data-url='{$event['data_url']}' data-id='{$event['id']}' class='event' onclick='return false;'>{$event['title']}</a><br>
+                        Event: <a href='{$event['permalink']}' data-url='{$data_url}' data-id='{$event['id']}' class='event' onclick='return false;'>{$event['title']}</a><br>
                         Where: {$event['location']}<br>
                         Price: {$event['cost']}
                     </dd>
                 
+EOD;
+            }
+        } else {
+            $output .= <<<EOD
+
+                    No upcoming events
 EOD;
         }
         
@@ -702,12 +717,12 @@ EOT;
         $links = <<<EOT
         
             <div class='alignleft'>
-                <a href='$url?term={$this->terms['previous']['start']}'>
+                <a href='$url?fsterm={$this->terms['previous']['start']}'>
                     <i class='fa fa-chevron-left'></i> Previous Term
                 </a>
             </div>
             <div class='alignright textright'>
-                <a href='$url?term={$this->terms['next']['start']}'>
+                <a href='$url?fsterm={$this->terms['next']['start']}'>
                     Next Term <i class="fa fa-chevron-right"></i>
                 </a>
             </div>
@@ -749,58 +764,66 @@ EOT;
     {
         $query = new \WP_Query( $args );
         
-        while ( $query->have_posts() ) {
-            $query->the_post();
-            
-            $id             = get_the_ID();
-            $title          = get_the_title();
-            $startdate      = get_post_meta( $id, 'start_date', true );
-            $enddate        = get_post_meta( $id, 'end_date', true );
-            $date           = $this->render_event_date( $startdate, $enddate );
-            $description    = get_the_content();
-            $location       = '';
-            $cost           = get_post_meta( $id, 'cost', true );
-            $link           = get_post_meta( $id, 'link', true );
-            $permalink      = get_permalink();
-            $category       = '';
-            
-            $locations = get_the_terms( $post->ID, 'location' );
-            
-            if ( $locations && ! is_wp_error( $locations ) ) { 
-            	$location_list = array();
-            	foreach ( $locations as $location ) {
-            		$location_list[] = $location->name;
-            	}
-            	$location = join( ', ', $location_list );
+        if ( $query->have_posts() ) {
+            while ( $query->have_posts() ) {
+                $query->the_post();
+                
+                $id             = get_the_ID();
+                $title          = get_the_title();
+                $startdate      = get_post_meta( $id, 'start_date', true );
+                $enddate        = get_post_meta( $id, 'end_date', true );
+                $date           = $this->render_event_date( $startdate, $enddate );
+                $description    = get_the_content();
+                $location       = '';
+                $cost           = get_post_meta( $id, 'cost', true );
+                $link           = get_post_meta( $id, 'link', true );
+                $permalink      = get_permalink();
+                $category       = '';
+                
+                $locations = get_the_terms( $id, 'location' );
+                
+                if ( $locations && ! is_wp_error( $locations ) ) { 
+                	$location_list = array();
+                	foreach ( $locations as $location ) {
+                		$location_list[] = $location->name;
+                	}
+                	$location = join( ', ', $location_list );
+                }
+                
+                $categories = get_the_terms( $id, 'programme_type' );
+                
+                if ( $categories && ! is_wp_error( $categories ) ) { 
+                	$category_list = array();
+                	foreach ( $categories as $category ) {
+                		$category_list[] = $category->name;
+                	}
+                	$category = join( ', ', $category_list );
+                }
+                
+                $programme[] = array( 
+                    'id'            => $id,
+                    'title'         => $title,
+                    'startdate'     => $startdate,
+                    'enddate'       => $enddate,
+                    'date'          => $date,
+                    'description'   => $description,
+                    'location'      => $location,
+                    'cost'          => $cost,
+                    'link'          => $link,
+                    'permalink'     => $permalink,
+                    'category'      => $category
+                );
+                
             }
             
-            $categories = get_the_terms( $post->ID, 'programme_type' );
+            wp_reset_postdata();
             
-            if ( $categories && ! is_wp_error( $categories ) ) { 
-            	$category_list = array();
-            	foreach ( $categories as $category ) {
-            		$category_list[] = $category->name;
-            	}
-            	$category = join( ', ', $category_list );
-            }
+            return $programme;
             
-            $programme[] = array( 
-                'id'            => $id,
-                'title'         => $title,
-                'startdate'     => $startdate,
-                'enddate'       => $enddate,
-                'date'          => $date,
-                'description'   => $description,
-                'location'      => $location,
-                'cost'          => $cost,
-                'link'          => $link,
-                'permalink'     => $permalink,
-                'category'      => $category
-            );
+        } else {
+            return;
         }
-        wp_reset_postdata();
         
-        return $programme;
     }
     
     /**
