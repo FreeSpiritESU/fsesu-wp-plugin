@@ -1,11 +1,48 @@
 changes
 
-# Windows image file caches
+# Numerous always-ignore extensions
+*.diff
+*.err
+*.orig
+*.log
+*.rej
+*.swo
+*.swp
+*.vi
+*~
+*.sass-cache
+
+# OS or Editor folders
+.DS_Store
+.AppleDouble
+.LSOverride
 Thumbs.db
 ehthumbs.db
-
-# Folder config file
 Desktop.ini
+.cache
+.project
+.settings
+.tmproj
+*.esproj
+nbproject
+*.sublime-project
+*.sublime-workspace
+
+# Dreamweaver added files
+_notes
+dwsync.xml
+
+# Komodo
+*.komodoproject
+.komodotools
+
+# Folders to ignore
+.hg
+.svn
+.CVS
+intermediate
+.idea
+cache
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
@@ -15,10 +52,6 @@ $RECYCLE.BIN/
 *.msi
 *.msm
 *.msp
-
-.DS_Store
-.AppleDouble
-.LSOverride
 
 # Icon must ends with two \r.
 Icon
@@ -30,3 +63,4 @@ Icon
 # Files that might appear on external disk
 .Spotlight-V100
 .Trashes
+
